@@ -229,7 +229,7 @@
 			]
 		},
 		{
-			"name": "5 - Refresh access token",
+			"name": "6 - Logout",
 			"request": {
 				"auth": {
 					"type": "bearer",
@@ -259,7 +259,7 @@
 			},
 			"response": [
 				{
-					"name": "5 - Refresh access token",
+					"name": "6 - Logout",
 					"originalRequest": {
 						"method": "POST",
 						"header": [],

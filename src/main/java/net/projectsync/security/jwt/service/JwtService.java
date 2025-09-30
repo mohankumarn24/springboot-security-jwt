@@ -3,15 +3,12 @@ package net.projectsync.security.jwt.service;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import net.projectsync.security.jwt.entity.User;
 import net.projectsync.security.jwt.model.Role;
 
 @Service
@@ -26,28 +23,17 @@ public class JwtService {
     @Value("${jwt.refresh-expiration-ms}")
     private long refreshExpirationMs;
 
-    // Access token using username and Role enum
     public String generateAccessToken(String username, Role role) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("role", role.name()); // store as string in token
+        claims.put("role", role.name());
         claims.put("type", "access");
         return createToken(claims, username, accessExpirationMs);
     }
 
-    // Refresh token using username
     public String generateRefreshToken(String username) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("type", "refresh");
         return createToken(claims, username, refreshExpirationMs);
-    }
-
-    // Overloads for convenience
-    public String generateAccessToken(User user) {
-        return generateAccessToken(user.getUsername(), user.getRole());
-    }
-
-    public String generateRefreshToken(User user) {
-        return generateRefreshToken(user.getUsername());
     }
 
     private String createToken(Map<String, Object> claims, String subject, long ttlMillis) {
@@ -84,4 +70,5 @@ public class JwtService {
         }
     }
 }
+
 

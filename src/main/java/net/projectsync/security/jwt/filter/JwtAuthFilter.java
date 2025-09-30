@@ -11,9 +11,10 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import io.jsonwebtoken.ExpiredJwtException;
+
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
+import net.projectsync.security.jwt.entity.User;
 import net.projectsync.security.jwt.repository.UserRepository;
 import net.projectsync.security.jwt.service.JwtService;
 
@@ -22,56 +23,43 @@ import net.projectsync.security.jwt.service.JwtService;
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-    
-    private final UserRepository userRepo;
+    private final UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
-                                    FilterChain filterChain)
-            throws ServletException, IOException {
+                                    FilterChain chain) throws ServletException, IOException {
+
+        String path = request.getServletPath();
+        if (path.startsWith("/api/auth/")) {
+            chain.doFilter(request, response); // skip auth endpoints
+            return;
+        }
 
         String authHeader = request.getHeader("Authorization");
-
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
-
             try {
                 String username = jwtService.extractUsername(token);
-
                 if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-
-                    // Reject refresh tokens for accessing endpoints
-                    if (jwtService.isRefreshToken(token)) {
-                        response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
-                                "Refresh token cannot access endpoints");
-                        return;
-                    }
-
-                    userRepo.findByUsername(username).ifPresent(user -> {
-                        // Enum role mapped to Spring Security format
-                        String springRole = user.getRole().asSpringRole(); // ROLE_ADMIN or ROLE_USER
-                        var authority = new SimpleGrantedAuthority(springRole);
-
-                        var authToken = new UsernamePasswordAuthenticationToken(
-                                username,
-                                null,
-                                Collections.singletonList(authority)
-                        );
-
+                    User user = userRepository.findByUsername(username).orElse(null);
+                    if (user != null) {
+                        String role = user.getRole().asSpringRole();
+                        UsernamePasswordAuthenticationToken authToken =
+                                new UsernamePasswordAuthenticationToken(username, null,
+                                        Collections.singletonList(new SimpleGrantedAuthority(role)));
                         SecurityContextHolder.getContext().setAuthentication(authToken);
-                    });
+                    }
                 }
-
-            } catch (ExpiredJwtException e) {
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token expired");
-                return;
             } catch (JwtException e) {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
                 return;
             }
         }
 
-        filterChain.doFilter(request, response);
+        chain.doFilter(request, response);
     }
 }
+
+
+

@@ -11,3 +11,7 @@ public class JwtApplication {
 	}
 
 }
+
+/*
+ * Run: D:\dev\github\springboot-postgresdb-rediscache\Redis-x64-3.0.504\redis-server.exe
+ */
