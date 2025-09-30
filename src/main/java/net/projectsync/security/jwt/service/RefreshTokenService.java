@@ -25,9 +25,9 @@ public class RefreshTokenService {
         redisTemplate.opsForValue().set(token, username, REFRESH_TOKEN_TTL, TimeUnit.SECONDS);
 
         // Add token to user's set of tokens
-        String userKey = getUserKey(username);
-        redisTemplate.opsForSet().add(userKey, token);
-        redisTemplate.expire(userKey, REFRESH_TOKEN_TTL, TimeUnit.SECONDS);
+        String key = "refreshTokens:" + username;
+        redisTemplate.opsForSet().add(key, token);
+        redisTemplate.expire(key, REFRESH_TOKEN_TTL, TimeUnit.SECONDS);
     }
 
     /**
@@ -44,8 +44,8 @@ public class RefreshTokenService {
         String username = redisTemplate.opsForValue().get(token);
         if (username != null) {
             // Remove token from user's set
-            String userKey = getUserKey(username);
-            redisTemplate.opsForSet().remove(userKey, token);
+        	String key = "refreshTokens:" + username;
+            redisTemplate.opsForSet().remove(key, token);
 
             // Delete the token key itself
             redisTemplate.delete(token);
@@ -56,17 +56,20 @@ public class RefreshTokenService {
      * Revoke all tokens for a user (used on logout or forced logout).
      */
     public void revokeTokensForUser(String username) {
-        String userKey = getUserKey(username);
-        Set<String> tokens = redisTemplate.opsForSet().members(userKey);
+    	String key = "refreshTokens:" + username;
+        Set<String> tokens = redisTemplate.opsForSet().members(key);
         if (tokens != null) {
             for (String token : tokens) {
                 redisTemplate.delete(token); // delete each individual token
             }
-            redisTemplate.delete(userKey); // delete the set of tokens
+            redisTemplate.delete(key); // delete the set of tokens
         }
     }
 
-    private String getUserKey(String username) {
-        return "refreshTokens:" + username;
+    // Check if user has any active tokens
+    public boolean hasActiveTokens(String username) {
+        String key = "refreshTokens:" + username;
+        Set<String> tokens = redisTemplate.opsForSet().members(key);
+        return tokens != null && !tokens.isEmpty();
     }
 }

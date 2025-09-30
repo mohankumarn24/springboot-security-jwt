@@ -61,6 +61,11 @@ public class AuthController {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid password");
         }
 
+        // Check if user already logged in
+        if (refreshTokenService.hasActiveTokens(user.getUsername())) {
+        	throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User already logged in");
+        } 
+        
         // Generate tokens
         String accessToken = jwtService.generateAccessToken(user.getUsername(), user.getRole());
         String refreshToken = jwtService.generateRefreshToken(user.getUsername());
@@ -104,12 +109,15 @@ public class AuthController {
             String accessToken = authHeader.substring(7);
             String username = jwtService.extractUsername(accessToken);
 
-            // Revoke all refresh tokens for this user
-            if (username != null) {
-                // Revoke all refresh tokens for this user
-                refreshTokenService.revokeTokensForUser(username);
+            // Check if user is already logged out
+            if (!refreshTokenService.hasActiveTokens(username)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("message", "User already logged out", "timestamp", Instant.now()));
             }
-
+            
+            // Revoke all refresh tokens for this user
+            refreshTokenService.revokeTokensForUser(username);
+            
             SecurityContextHolder.clearContext();
 
             return ResponseEntity.ok(Map.of(
