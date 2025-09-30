@@ -9,7 +9,7 @@ import net.projectsync.security.jwt.model.Role;
 import net.projectsync.security.jwt.repository.UserRepository;
 
 @Configuration
-public class CreateUsers {
+public class CreateUsersStartUp {
 
 	@Bean
 	CommandLineRunner init(UserRepository userRepo, PasswordEncoder encoder) {

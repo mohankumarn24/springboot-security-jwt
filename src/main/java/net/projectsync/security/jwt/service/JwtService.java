@@ -25,8 +25,9 @@ public class JwtService {
 
     public String generateAccessToken(String username, Role role) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("role", role.name());
-        claims.put("type", "access");
+        // keep information as minimal as possible in JWT
+        // claims.put("role", role.name());
+        // claims.put("type", "access");
         return createToken(claims, username, accessExpirationMs);
     }
 
