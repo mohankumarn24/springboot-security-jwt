@@ -1,5 +1,6 @@
 package net.projectsync.security.jwt.entity;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -12,11 +13,15 @@ public class User {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
+	@Column(unique = true, nullable = false)
 	private String username;
 
+	@Column(nullable = false)
 	private String password;
 
-	private String role;
+	// store role without ROLE_ prefix (we will map it)
+	@Column(nullable = false)
+	private String role; // e.g. ADMIN or USER
 
 	public Long getId() {
 		return id;

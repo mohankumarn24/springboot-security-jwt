@@ -1,45 +1,77 @@
 package net.projectsync.security.jwt.service;
 
 import java.util.Date;
-import org.springframework.security.core.userdetails.UserDetails;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import net.projectsync.security.jwt.entity.User;
 
 @Service
 public class JwtService {
-	
-  private final String SECRET = "secretkey";
 
-  public String generateToken(String username) {
-    return Jwts.builder()
-      .setSubject(username)
-      .setIssuedAt(new Date())
-      .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 15))
-      .signWith(SignatureAlgorithm.HS256, SECRET)
-      .compact();
-  }
-  
-  public String generateRefreshToken(String username) {
-	    return Jwts.builder()
-	        .setSubject(username)
-	        .setIssuedAt(new Date())
-	        .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24 * 7)) // 7 days
-	        .signWith(SignatureAlgorithm.HS256, SECRET)
-	        .compact();
-  }
+	@Value("${jwt.secret}")
+	private String secret;
 
-  public String extractUsername(String token) {
-    return Jwts.parser().setSigningKey(SECRET).parseClaimsJws(token).getBody().getSubject();
-  }
+	@Value("${jwt.access-expiration-ms}")
+	private long accessExpirationMs;
 
-  public boolean validateToken(String token, UserDetails userDetails) {
-    String username = extractUsername(token);
-    return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
-  }
+	@Value("${jwt.refresh-expiration-ms}")
+	private long refreshExpirationMs;
 
-  private boolean isTokenExpired(String token) {
-    Date expiration = Jwts.parser().setSigningKey(SECRET).parseClaimsJws(token).getBody().getExpiration();
-    return expiration.before(new Date());
-  }
+	// Access token using username and role
+	public String generateAccessToken(String username, String role) {
+	    Map<String, Object> claims = new HashMap<>();
+	    claims.put("role", role);
+	    claims.put("type", "access");
+	    return createToken(claims, username, accessExpirationMs);
+	}
+
+	// Refresh token using username
+	public String generateRefreshToken(String username) {
+	    Map<String, Object> claims = new HashMap<>();
+	    claims.put("type", "refresh");
+	    return createToken(claims, username, refreshExpirationMs);
+	}
+
+	// Optional overloads for convenience
+	public String generateAccessToken(User user) {
+		return generateAccessToken(user.getUsername(), user.getRole());
+	}
+
+	public String generateRefreshToken(User user) {
+		return generateRefreshToken(user.getUsername());
+	}
+
+	private String createToken(Map<String, Object> claims, String subject, long ttlMillis) {
+		long now = System.currentTimeMillis();
+		return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(new Date(now))
+				.setExpiration(new Date(now + ttlMillis)).signWith(SignatureAlgorithm.HS512, secret).compact();
+	}
+
+	public Claims extractAllClaims(String token) {
+		return Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
+	}
+
+	public String extractUsername(String token) {
+		try {
+			return extractAllClaims(token).getSubject();
+		} catch (JwtException | IllegalArgumentException e) {
+			return null;
+		}
+	}
+
+	public boolean isRefreshToken(String token) {
+		try {
+			return "refresh".equals(extractAllClaims(token).get("type", String.class));
+		} catch (JwtException e) {
+			return false;
+		}
+	}
 }
