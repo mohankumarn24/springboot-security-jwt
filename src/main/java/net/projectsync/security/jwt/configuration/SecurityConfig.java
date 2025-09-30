@@ -11,47 +11,43 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
+import lombok.RequiredArgsConstructor;
 import net.projectsync.security.jwt.filter.JwtAuthFilter;
 import net.projectsync.security.jwt.repository.UserRepository;
 import net.projectsync.security.jwt.service.JwtService;
 
 @Configuration
 @EnableGlobalMethodSecurity(prePostEnabled = true)
+@RequiredArgsConstructor
 public class SecurityConfig {
 
-	private final JwtService jwtService;
-	private final UserRepository userRepository;
+    private final JwtService jwtService;
+    private final UserRepository userRepository;
 
-	public SecurityConfig(JwtService jwtService, UserRepository userRepo) {
-		this.jwtService = jwtService;
-		this.userRepository = userRepo;
-	}
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthFilter jwtFilter) throws Exception {
+        http
+            .csrf().disable()
+            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            .and()
+            .authorizeRequests()
+                .antMatchers("/api/auth/**").permitAll()
+                .antMatchers("/api/admin/**").hasRole("ADMIN")
+                .antMatchers("/api/user/**").hasRole("USER")
+                .anyRequest().authenticated()
+            .and()
+            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
-	@Bean
-	public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthFilter jwtFilter) throws Exception {
-	    http
-	        .csrf().disable()
-	        .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-	        .and()
-	        .authorizeRequests() // <-- use authorizeRequests() instead of authorizeHttpRequests()
-	            .antMatchers("/api/auth/**").permitAll()
-	            .antMatchers("/api/admin/**").hasRole("ADMIN")
-	            .antMatchers("/api/user/**").hasRole("USER")
-	            .anyRequest().authenticated()
-	        .and()
-	        .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+        return http.build();
+    }
 
-	    return http.build();
-	}
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
-	@Bean
-	public PasswordEncoder passwordEncoder() {
-		return new BCryptPasswordEncoder();
-	}
-
-	@Bean
-	public AuthenticationManager authenticationManager(AuthenticationConfiguration conf) throws Exception {
-		return conf.getAuthenticationManager();
-	}
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration conf) throws Exception {
+        return conf.getAuthenticationManager();
+    }
 }

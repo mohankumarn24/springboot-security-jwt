@@ -4,51 +4,48 @@ import java.time.Instant;
 import java.util.Optional;
 import javax.transaction.Transactional;
 import org.springframework.stereotype.Service;
+import lombok.RequiredArgsConstructor;
 import net.projectsync.security.jwt.entity.RefreshToken;
 import net.projectsync.security.jwt.repository.RefreshTokenRepository;
 
 @Service
+@RequiredArgsConstructor
 public class RefreshTokenService {
 
-	private final RefreshTokenRepository repo;
+    private final RefreshTokenRepository refreshTokenRepository;
 
-	public RefreshTokenService(RefreshTokenRepository repo) {
-		this.repo = repo;
-	}
+    @Transactional
+    public RefreshToken saveToken(String token, String username, Instant expiry) {
+        if (expiry.isBefore(Instant.now())) {
+            throw new IllegalArgumentException("Expiry must be in the future");
+        }
 
-	// Save refresh token
-	public RefreshToken saveToken(String token, String username, Instant expiry) {
-		RefreshToken r = new RefreshToken();
-		r.setToken(token);
-		r.setUsername(username);
-		r.setExpiryDate(expiry);
-		r.setRevoked(false);
-		return repo.save(r);
-	}
+        RefreshToken refreshToken = new RefreshToken();
+        refreshToken.setToken(token);
+        refreshToken.setUsername(username);
+        refreshToken.setExpiryDate(expiry);
+        refreshToken.setRevoked(false);
+        return refreshTokenRepository.save(refreshToken);
+    }
 
-	// Find by token
-	public Optional<RefreshToken> findByToken(String token) {
-		return repo.findByToken(token);
-	}
+    public Optional<RefreshToken> findByToken(String token) {
+        return refreshTokenRepository.findByToken(token);
+    }
+    
+    @Transactional
+    public void revokeToken(String token) {
+    	refreshTokenRepository.findByToken(token).ifPresent(t -> t.setRevoked(true));
+    }
 
-	// Revoke a single token
-	@Transactional
-	public void revokeToken(String token) {
-		repo.findByToken(token).ifPresent(t -> {
-			t.setRevoked(true);
-			repo.save(t);
-		});
-	}
+    @Transactional
+    public void revokeTokenForUser(String username) {
+    	refreshTokenRepository.deleteByUsername(username); // or update to revoke for history
+    }
 
-	// Revoke all tokens for a user
-	@Transactional
-	public void revokeTokenForUser(String username) {
-		repo.deleteByUsername(username);
-	}
-
-	// Check if token is valid (not revoked and not expired)
-	public boolean isValid(String token) {
-		return repo.findByToken(token).filter(t -> !t.isRevoked()).filter(t -> t.getExpiryDate().isAfter(Instant.now()))
-				.isPresent();
-	}
+    public boolean isValid(String token) {
+        return refreshTokenRepository.findByToken(token)
+        							 .filter(t -> !t.isRevoked())
+        							 .filter(t -> t.getExpiryDate().isAfter(Instant.now()))
+        							 .isPresent();
+    }
 }

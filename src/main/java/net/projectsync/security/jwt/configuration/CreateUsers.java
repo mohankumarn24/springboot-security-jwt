@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import net.projectsync.security.jwt.entity.User;
+import net.projectsync.security.jwt.model.Role;
 import net.projectsync.security.jwt.repository.UserRepository;
 
 @Configuration
@@ -17,7 +18,7 @@ public class CreateUsers {
 				User admin = new User();
 				admin.setUsername("admin");
 				admin.setPassword(encoder.encode("password"));
-				admin.setRole("ROLE_ADMIN");
+				admin.setRole(Role.ADMIN);
 				userRepo.save(admin);
 			}
 
@@ -25,10 +26,9 @@ public class CreateUsers {
 				User user = new User();
 				user.setUsername("user");
 				user.setPassword(encoder.encode("password"));
-				user.setRole("ROLE_USER");
+				user.setRole(Role.USER);
 				userRepo.save(user);
 			}
 		};
 	}
-
 }

@@ -1,12 +1,20 @@
 package net.projectsync.security.jwt.dto;
 
 public class AuthResponse {
-	
-	public String accessToken;
-	public String refreshToken;
 
-	public AuthResponse(String accessToken, String refreshToken) {
-		this.accessToken = accessToken;
-		this.refreshToken = refreshToken;
-	}
+    private String accessToken;
+    private String refreshToken;
+
+    public AuthResponse(String accessToken, String refreshToken) {
+        this.accessToken = accessToken;
+        this.refreshToken = refreshToken;
+    }
+
+    public String getAccessToken() {
+        return accessToken;
+    }
+
+    public String getRefreshToken() {
+        return refreshToken;
+    }
 }

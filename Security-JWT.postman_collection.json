@@ -13,7 +13,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"username\": \"sachin\",\r\n  \"password\": \"password\",\r\n  \"role\": \"ROLE_USER\"\r\n}",
+					"raw": "{\r\n  \"username\": \"sachin\",\r\n  \"password\": \"password\",\r\n  \"role\": \"USER\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -42,7 +42,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"username\": \"sachin\",\r\n  \"password\": \"password\",\r\n  \"role\": \"ROLE_USER\"\r\n}",
+							"raw": "{\r\n  \"username\": \"sachin\",\r\n  \"password\": \"password\",\r\n  \"role\": \"USER\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -93,15 +93,15 @@
 						},
 						{
 							"key": "Content-Type",
-							"value": "text/plain;charset=UTF-8"
+							"value": "application/json"
 						},
 						{
-							"key": "Content-Length",
-							"value": "28"
+							"key": "Transfer-Encoding",
+							"value": "chunked"
 						},
 						{
 							"key": "Date",
-							"value": "Tue, 30 Sep 2025 12:11:21 GMT"
+							"value": "Tue, 30 Sep 2025 15:06:32 GMT"
 						},
 						{
 							"key": "Keep-Alive",
@@ -113,7 +113,7 @@
 						}
 					],
 					"cookie": [],
-					"body": "User registered successfully"
+					"body": "{\n    \"timestamp\": \"2025-09-30T15:06:32.313735100Z\",\n    \"message\": \"User registered successfully\"\n}"
 				}
 			]
 		},
@@ -212,7 +212,7 @@
 						},
 						{
 							"key": "Date",
-							"value": "Tue, 30 Sep 2025 12:11:29 GMT"
+							"value": "Tue, 30 Sep 2025 15:08:58 GMT"
 						},
 						{
 							"key": "Keep-Alive",
@@ -224,112 +224,23 @@
 						}
 					],
 					"cookie": [],
-					"body": "{\n    \"accessToken\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzYWNoaW4iLCJpYXQiOjE3NTkyMzQyODksImV4cCI6MTc1OTIzNTE4OX0.LCAheA1AHLw7Kw4YecXJDXSbuPg0so3GgQOfgjX8NZk\",\n    \"refreshToken\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzYWNoaW4iLCJpYXQiOjE3NTkyMzQyODksImV4cCI6MTc1OTgzOTA4OX0.4l5PLCF0A77UOIGWpvf_f9ZzMlTkizT_tVu339797QI\"\n}"
+					"body": "{\n    \"accessToken\": \"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYWNoaW4iLCJyb2xlIjoiVVNFUiIsInR5cGUiOiJhY2Nlc3MiLCJleHAiOjE3NTkyNDU4MzgsImlhdCI6MTc1OTI0NDkzOH0.A-ef-qCdpKfeGkRH4YFvR2cCpcXFA49l6J3KSqKf2S0Lh038ker6_YVS043I5jNVvRLnjyWODTeS7jqyPEGbXw\",\n    \"refreshToken\": \"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYWNoaW4iLCJ0eXBlIjoicmVmcmVzaCIsImV4cCI6MTc1OTg0OTczOCwiaWF0IjoxNzU5MjQ0OTM4fQ.HOukkNuQOjsT5VsnzsQdZA5TnEbL42AzhFixyiL5SiPBtyHmlSQx4v8tpSoz41lMki56ti1mgX-HskWjfyBUbg\"\n}"
 				}
 			]
 		},
 		{
-			"name": "4- Access unauthorised endpoint",
+			"name": "5 - Refresh access token",
 			"request": {
 				"auth": {
 					"type": "bearer",
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzYWNoaW4iLCJpYXQiOjE3NTkyMzQ3MDUsImV4cCI6MTc1OTIzNTYwNX0.8AL4u8BF01plF-UNnpbCqnqTgFALvcbiFK1cJUNbUVg",
+							"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzYWNoaW4iLCJpYXQiOjE3NTkyMzY1MzEsImV4cCI6MTc1OTIzNzQzMX0.eO9uNwf0GJ1WbeGeORvXTSxTjIT487BwGznvSJJr2jE",
 							"type": "string"
 						}
 					]
 				},
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:8080/api/admin/dashboard",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						"api",
-						"admin",
-						"dashboard"
-					]
-				}
-			},
-			"response": [
-				{
-					"name": "4- Access unauthorised endpoint",
-					"originalRequest": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/api/admin/dashboard",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"admin",
-								"dashboard"
-							]
-						}
-					},
-					"status": "Forbidden",
-					"code": 403,
-					"_postman_previewlanguage": null,
-					"header": [
-						{
-							"key": "X-Content-Type-Options",
-							"value": "nosniff"
-						},
-						{
-							"key": "X-XSS-Protection",
-							"value": "1; mode=block"
-						},
-						{
-							"key": "Cache-Control",
-							"value": "no-cache, no-store, max-age=0, must-revalidate"
-						},
-						{
-							"key": "Pragma",
-							"value": "no-cache"
-						},
-						{
-							"key": "Expires",
-							"value": "0"
-						},
-						{
-							"key": "X-Frame-Options",
-							"value": "DENY"
-						},
-						{
-							"key": "Content-Length",
-							"value": "0"
-						},
-						{
-							"key": "Date",
-							"value": "Tue, 30 Sep 2025 12:13:42 GMT"
-						},
-						{
-							"key": "Keep-Alive",
-							"value": "timeout=60"
-						},
-						{
-							"key": "Connection",
-							"value": "keep-alive"
-						}
-					],
-					"cookie": [],
-					"body": null
-				}
-			]
-		},
-		{
-			"name": "5 - Logout",
-			"request": {
 				"method": "POST",
 				"header": [],
 				"url": {
@@ -348,7 +259,7 @@
 			},
 			"response": [
 				{
-					"name": "5 - Logout",
+					"name": "5 - Refresh access token",
 					"originalRequest": {
 						"method": "POST",
 						"header": [],
@@ -396,15 +307,15 @@
 						},
 						{
 							"key": "Content-Type",
-							"value": "text/plain;charset=UTF-8"
+							"value": "application/json"
 						},
 						{
-							"key": "Content-Length",
-							"value": "23"
+							"key": "Transfer-Encoding",
+							"value": "chunked"
 						},
 						{
 							"key": "Date",
-							"value": "Tue, 30 Sep 2025 12:16:33 GMT"
+							"value": "Tue, 30 Sep 2025 15:10:26 GMT"
 						},
 						{
 							"key": "Keep-Alive",
@@ -416,7 +327,7 @@
 						}
 					],
 					"cookie": [],
-					"body": "Logged out successfully"
+					"body": "{\n    \"timestamp\": \"2025-09-30T15:10:26.268983600Z\",\n    \"message\": \"Logged out successfully\"\n}"
 				}
 			]
 		},
@@ -431,7 +342,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzYWNoaW4iLCJpYXQiOjE3NTkyMzQ3MDUsImV4cCI6MTc1OTIzNTYwNX0.8AL4u8BF01plF-UNnpbCqnqTgFALvcbiFK1cJUNbUVg",
+							"value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYWNoaW4iLCJyb2xlIjoiVVNFUiIsInR5cGUiOiJhY2Nlc3MiLCJleHAiOjE3NTkyNDU4MzgsImlhdCI6MTc1OTI0NDkzOH0.A-ef-qCdpKfeGkRH4YFvR2cCpcXFA49l6J3KSqKf2S0Lh038ker6_YVS043I5jNVvRLnjyWODTeS7jqyPEGbXw",
 							"type": "string"
 						}
 					]
@@ -510,15 +421,15 @@
 						},
 						{
 							"key": "Content-Type",
-							"value": "text/plain;charset=UTF-8"
+							"value": "application/json"
 						},
 						{
-							"key": "Content-Length",
-							"value": "10"
+							"key": "Transfer-Encoding",
+							"value": "chunked"
 						},
 						{
 							"key": "Date",
-							"value": "Tue, 30 Sep 2025 12:19:05 GMT"
+							"value": "Tue, 30 Sep 2025 15:09:20 GMT"
 						},
 						{
 							"key": "Keep-Alive",
@@ -530,12 +441,12 @@
 						}
 					],
 					"cookie": [],
-					"body": "User tasks"
+					"body": "{\n    \"tasks\": [\n        \"Task 1\",\n        \"Task 2\"\n    ],\n    \"timestamp\": \"2025-09-30T15:09:20.525121700Z\"\n}"
 				}
 			]
 		},
 		{
-			"name": "4 - Refresh access token",
+			"name": "5 - Refresh access token",
 			"request": {
 				"auth": {
 					"type": "bearer",
@@ -551,7 +462,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"refreshToken\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzYWNoaW4iLCJpYXQiOjE3NTkyMzQyODksImV4cCI6MTc1OTgzOTA4OX0.4l5PLCF0A77UOIGWpvf_f9ZzMlTkizT_tVu339797QI\"\r\n}\r\n",
+					"raw": "{\r\n  \"refreshToken\": \"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYWNoaW4iLCJ0eXBlIjoicmVmcmVzaCIsImV4cCI6MTc1OTg0OTczOCwiaWF0IjoxNzU5MjQ0OTM4fQ.HOukkNuQOjsT5VsnzsQdZA5TnEbL42AzhFixyiL5SiPBtyHmlSQx4v8tpSoz41lMki56ti1mgX-HskWjfyBUbg\"\r\n}\r\n",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -574,13 +485,13 @@
 			},
 			"response": [
 				{
-					"name": "4 - Refresh access token",
+					"name": "5 - Refresh access token",
 					"originalRequest": {
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"refreshToken\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzYWNoaW4iLCJpYXQiOjE3NTkyMzQyODksImV4cCI6MTc1OTgzOTA4OX0.4l5PLCF0A77UOIGWpvf_f9ZzMlTkizT_tVu339797QI\"\r\n}\r\n",
+							"raw": "{\r\n  \"refreshToken\": \"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYWNoaW4iLCJ0eXBlIjoicmVmcmVzaCIsImV4cCI6MTc1OTg0OTczOCwiaWF0IjoxNzU5MjQ0OTM4fQ.HOukkNuQOjsT5VsnzsQdZA5TnEbL42AzhFixyiL5SiPBtyHmlSQx4v8tpSoz41lMki56ti1mgX-HskWjfyBUbg\"\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -639,7 +550,7 @@
 						},
 						{
 							"key": "Date",
-							"value": "Tue, 30 Sep 2025 12:16:10 GMT"
+							"value": "Tue, 30 Sep 2025 15:09:58 GMT"
 						},
 						{
 							"key": "Keep-Alive",
@@ -651,7 +562,106 @@
 						}
 					],
 					"cookie": [],
-					"body": "{\n    \"accessToken\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzYWNoaW4iLCJpYXQiOjE3NTkyMzQ1NzAsImV4cCI6MTc1OTIzNTQ3MH0.c0tC8ZU-e2RNsxTbRfc1zxu7YwUA3euJXywsFv3ny68\",\n    \"refreshToken\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzYWNoaW4iLCJpYXQiOjE3NTkyMzQyODksImV4cCI6MTc1OTgzOTA4OX0.4l5PLCF0A77UOIGWpvf_f9ZzMlTkizT_tVu339797QI\"\n}"
+					"body": "{\n    \"accessToken\": \"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYWNoaW4iLCJyb2xlIjoiVVNFUiIsInR5cGUiOiJhY2Nlc3MiLCJleHAiOjE3NTkyNDU4OTgsImlhdCI6MTc1OTI0NDk5OH0.MWNsurFSmjN3SOip7CYTMJCBVC5nCGHRlHm4cEmbyx9fYUhwUfeZn33sTFsX80KfrPhf_w-TdQ4I1Pw8tJJIsA\",\n    \"refreshToken\": \"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYWNoaW4iLCJ0eXBlIjoicmVmcmVzaCIsImV4cCI6MTc1OTg0OTc5OCwiaWF0IjoxNzU5MjQ0OTk4fQ.NFqyYZJi-w-aDMXoIO98SZ_Qnab5DTU_dlTxg4Qv-vKCXfwRSYqC_elEigqA0fsg5F4k0Da_P_ZuHTxMIA__Kg\"\n}"
+				}
+			]
+		},
+		{
+			"name": "4 - Access unathorized endpoint",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYWNoaW4iLCJyb2xlIjoiVVNFUiIsInR5cGUiOiJhY2Nlc3MiLCJleHAiOjE3NTkyNDU4MzgsImlhdCI6MTc1OTI0NDkzOH0.A-ef-qCdpKfeGkRH4YFvR2cCpcXFA49l6J3KSqKf2S0Lh038ker6_YVS043I5jNVvRLnjyWODTeS7jqyPEGbXw",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/admin/dashboard",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"admin",
+						"dashboard"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "4 - Access unathorized endpoint",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/admin/dashboard",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"admin",
+								"dashboard"
+							]
+						}
+					},
+					"status": "Forbidden",
+					"code": 403,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "X-Content-Type-Options",
+							"value": "nosniff"
+						},
+						{
+							"key": "X-XSS-Protection",
+							"value": "1; mode=block"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "no-cache, no-store, max-age=0, must-revalidate"
+						},
+						{
+							"key": "Pragma",
+							"value": "no-cache"
+						},
+						{
+							"key": "Expires",
+							"value": "0"
+						},
+						{
+							"key": "X-Frame-Options",
+							"value": "DENY"
+						},
+						{
+							"key": "Content-Length",
+							"value": "0"
+						},
+						{
+							"key": "Date",
+							"value": "Tue, 30 Sep 2025 15:09:43 GMT"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=60"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						}
+					],
+					"cookie": [],
+					"body": null
 				}
 			]
 		}
