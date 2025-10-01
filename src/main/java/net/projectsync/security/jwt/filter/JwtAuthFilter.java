@@ -42,14 +42,33 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             try {
                 String username = jwtService.extractUsername(token);
                 if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                    User user = userRepository.findByUsername(username).orElse(null);
+                    // Extract role directly from JWT. Now authentication is purely from token claims → fully stateless
+                    String role = jwtService.extractAllClaims(token).get("role", String.class);
+                    if (role == null) {
+                        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Role not found in token");
+                        return;
+                    }   
+                    
+                    // Create authentication token and set in context
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(
+                                    username,
+                                    null,
+                                    Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role)) // TODO: remove hardcoding
+                            );
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                    
+                	/*
+                    User user = userRepository.findByUsername(username).orElse(null); // hits db, impacts performance. Refer Note1
                     if (user != null) {
-                        String role = user.getRole().asSpringRole();
+                        String role = user.getRole().asSpringRole();	// we can get this from token itself, if we have added it in claims
                         UsernamePasswordAuthenticationToken authToken =
-                                new UsernamePasswordAuthenticationToken(username, null,
-                                        Collections.singletonList(new SimpleGrantedAuthority(role)));
+                                new UsernamePasswordAuthenticationToken(username, 
+                                null,
+                                Collections.singletonList(new SimpleGrantedAuthority(role)));
                         SecurityContextHolder.getContext().setAuthentication(authToken);
                     }
+                    */              	
                 }
             } catch (JwtException e) {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
@@ -60,6 +79,5 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         chain.doFilter(request, response);
     }
 }
-
 
 
