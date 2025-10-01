@@ -21,12 +21,12 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8080/api/auth/signup",
-					"protocol": "http",
+					"raw": "https://localhost:8443/api/auth/signup",
+					"protocol": "https",
 					"host": [
 						"localhost"
 					],
-					"port": "8080",
+					"port": "8443",
 					"path": [
 						"api",
 						"auth",
@@ -114,6 +114,170 @@
 					],
 					"cookie": [],
 					"body": "{\n    \"timestamp\": \"2025-09-30T15:06:32.313735100Z\",\n    \"message\": \"User registered successfully\"\n}"
+				},
+				{
+					"name": "1 - User already exists",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"username\": \"sachin\",\r\n  \"password\": \"password\",\r\n  \"role\": \"USER\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/auth/signup",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"auth",
+								"signup"
+							]
+						}
+					},
+					"status": "Conflict",
+					"code": 409,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "X-Content-Type-Options",
+							"value": "nosniff"
+						},
+						{
+							"key": "X-XSS-Protection",
+							"value": "1; mode=block"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "no-cache, no-store, max-age=0, must-revalidate"
+						},
+						{
+							"key": "Pragma",
+							"value": "no-cache"
+						},
+						{
+							"key": "Expires",
+							"value": "0"
+						},
+						{
+							"key": "X-Frame-Options",
+							"value": "DENY"
+						},
+						{
+							"key": "Content-Type",
+							"value": "text/plain;charset=UTF-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "23"
+						},
+						{
+							"key": "Date",
+							"value": "Tue, 30 Sep 2025 17:49:41 GMT"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=60"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						}
+					],
+					"cookie": [],
+					"body": "Username already exists"
+				},
+				{
+					"name": "1 - Sign up (https)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"username\": \"sachin\",\r\n  \"password\": \"password\",\r\n  \"role\": \"USER\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:8443/api/auth/signup",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "8443",
+							"path": [
+								"api",
+								"auth",
+								"signup"
+							]
+						}
+					},
+					"status": "Conflict",
+					"code": 409,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "X-Content-Type-Options",
+							"value": "nosniff"
+						},
+						{
+							"key": "X-XSS-Protection",
+							"value": "1; mode=block"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "no-cache, no-store, max-age=0, must-revalidate"
+						},
+						{
+							"key": "Pragma",
+							"value": "no-cache"
+						},
+						{
+							"key": "Expires",
+							"value": "0"
+						},
+						{
+							"key": "Strict-Transport-Security",
+							"value": "max-age=31536000 ; includeSubDomains"
+						},
+						{
+							"key": "X-Frame-Options",
+							"value": "DENY"
+						},
+						{
+							"key": "Content-Type",
+							"value": "text/plain;charset=UTF-8"
+						},
+						{
+							"key": "Content-Length",
+							"value": "23"
+						},
+						{
+							"key": "Date",
+							"value": "Wed, 01 Oct 2025 16:37:01 GMT"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=60"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						}
+					],
+					"cookie": [],
+					"body": "Username already exists"
 				}
 			]
 		},
@@ -132,12 +296,12 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8080/api/auth/signin",
-					"protocol": "http",
+					"raw": "https://localhost:8443/api/auth/signin",
+					"protocol": "https",
 					"host": [
 						"localhost"
 					],
-					"port": "8080",
+					"port": "8443",
 					"path": [
 						"api",
 						"auth",
@@ -301,6 +465,658 @@
 					],
 					"cookie": [],
 					"body": "{\n    \"timestamp\": \"2025-09-30T17:45:12.201+00:00\",\n    \"status\": 400,\n    \"error\": \"Bad Request\",\n    \"path\": \"/api/auth/signin\"\n}"
+				},
+				{
+					"name": "2 - Sign in (https)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"username\": \"sachin\",\r\n  \"password\": \"password\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:8443/api/auth/signin",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "8443",
+							"path": [
+								"api",
+								"auth",
+								"signin"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "X-Content-Type-Options",
+							"value": "nosniff"
+						},
+						{
+							"key": "X-XSS-Protection",
+							"value": "1; mode=block"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "no-cache, no-store, max-age=0, must-revalidate"
+						},
+						{
+							"key": "Pragma",
+							"value": "no-cache"
+						},
+						{
+							"key": "Expires",
+							"value": "0"
+						},
+						{
+							"key": "Strict-Transport-Security",
+							"value": "max-age=31536000 ; includeSubDomains"
+						},
+						{
+							"key": "X-Frame-Options",
+							"value": "DENY"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Transfer-Encoding",
+							"value": "chunked"
+						},
+						{
+							"key": "Date",
+							"value": "Wed, 01 Oct 2025 16:36:17 GMT"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=60"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"accessToken\": \"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYWNoaW4iLCJyb2xlIjoiVVNFUiIsInR5cGUiOiJhY2Nlc3MiLCJleHAiOjE3NTkzMzc0NzcsImlhdCI6MTc1OTMzNjU3N30.uKvAEhcwGB9GvbCn1c1wZRM1sn4YEP5rFlL04rrs-det5-oE2wwvDAL7D7Q3-n01F4_Uox7YfRcUN_ufkG06eQ\",\n    \"refreshToken\": \"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYWNoaW4iLCJ0eXBlIjoicmVmcmVzaCIsImV4cCI6MTc1OTk0MTM3NywiaWF0IjoxNzU5MzM2NTc3fQ.KhrQDamWz2YML8mk-DkP_DXFAb_4N2zoDkYXDKxsy_QWh4hn5-uQZJ18uld1Sbi1qcSQ1xLXGCAiiK7IkZKqKA\"\n}"
+				}
+			]
+		},
+		{
+			"name": "3 - Access authorized endpoint",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYWNoaW4iLCJyb2xlIjoiVVNFUiIsInR5cGUiOiJhY2Nlc3MiLCJleHAiOjE3NTkyNDU4MzgsImlhdCI6MTc1OTI0NDkzOH0.A-ef-qCdpKfeGkRH4YFvR2cCpcXFA49l6J3KSqKf2S0Lh038ker6_YVS043I5jNVvRLnjyWODTeS7jqyPEGbXw",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/user/tasks",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"user",
+						"tasks"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "3 - Access authorized endpoint",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/user/tasks",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"user",
+								"tasks"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "X-Content-Type-Options",
+							"value": "nosniff"
+						},
+						{
+							"key": "X-XSS-Protection",
+							"value": "1; mode=block"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "no-cache, no-store, max-age=0, must-revalidate"
+						},
+						{
+							"key": "Pragma",
+							"value": "no-cache"
+						},
+						{
+							"key": "Expires",
+							"value": "0"
+						},
+						{
+							"key": "X-Frame-Options",
+							"value": "DENY"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Transfer-Encoding",
+							"value": "chunked"
+						},
+						{
+							"key": "Date",
+							"value": "Tue, 30 Sep 2025 15:09:20 GMT"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=60"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"tasks\": [\n        \"Task 1\",\n        \"Task 2\"\n    ],\n    \"timestamp\": \"2025-09-30T15:09:20.525121700Z\"\n}"
+				},
+				{
+					"name": "3 - Access authorized endpoint (https)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://localhost:8443/api/user/tasks",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "8443",
+							"path": [
+								"api",
+								"user",
+								"tasks"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "X-Content-Type-Options",
+							"value": "nosniff"
+						},
+						{
+							"key": "X-XSS-Protection",
+							"value": "1; mode=block"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "no-cache, no-store, max-age=0, must-revalidate"
+						},
+						{
+							"key": "Pragma",
+							"value": "no-cache"
+						},
+						{
+							"key": "Expires",
+							"value": "0"
+						},
+						{
+							"key": "Strict-Transport-Security",
+							"value": "max-age=31536000 ; includeSubDomains"
+						},
+						{
+							"key": "X-Frame-Options",
+							"value": "DENY"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Transfer-Encoding",
+							"value": "chunked"
+						},
+						{
+							"key": "Date",
+							"value": "Wed, 01 Oct 2025 16:37:58 GMT"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=60"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"tasks\": [\n        \"Task 1\",\n        \"Task 2\"\n    ],\n    \"timestamp\": \"2025-10-01T16:37:58.419337900Z\"\n}"
+				}
+			]
+		},
+		{
+			"name": "4 - Access unathorized endpoint",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYWNoaW4iLCJyb2xlIjoiVVNFUiIsInR5cGUiOiJhY2Nlc3MiLCJleHAiOjE3NTkyNDU4MzgsImlhdCI6MTc1OTI0NDkzOH0.A-ef-qCdpKfeGkRH4YFvR2cCpcXFA49l6J3KSqKf2S0Lh038ker6_YVS043I5jNVvRLnjyWODTeS7jqyPEGbXw",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/admin/dashboard",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"admin",
+						"dashboard"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "4 - Access unathorized endpoint",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/admin/dashboard",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"admin",
+								"dashboard"
+							]
+						}
+					},
+					"status": "Forbidden",
+					"code": 403,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "X-Content-Type-Options",
+							"value": "nosniff"
+						},
+						{
+							"key": "X-XSS-Protection",
+							"value": "1; mode=block"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "no-cache, no-store, max-age=0, must-revalidate"
+						},
+						{
+							"key": "Pragma",
+							"value": "no-cache"
+						},
+						{
+							"key": "Expires",
+							"value": "0"
+						},
+						{
+							"key": "X-Frame-Options",
+							"value": "DENY"
+						},
+						{
+							"key": "Content-Length",
+							"value": "0"
+						},
+						{
+							"key": "Date",
+							"value": "Tue, 30 Sep 2025 15:09:43 GMT"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=60"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						}
+					],
+					"cookie": [],
+					"body": null
+				},
+				{
+					"name": "4 - Access unathorized endpoint (https)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:8443/api/admin/dashboard",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "8443",
+							"path": [
+								"api",
+								"admin",
+								"dashboard"
+							]
+						}
+					},
+					"status": "Forbidden",
+					"code": 403,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "X-Content-Type-Options",
+							"value": "nosniff"
+						},
+						{
+							"key": "X-XSS-Protection",
+							"value": "1; mode=block"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "no-cache, no-store, max-age=0, must-revalidate"
+						},
+						{
+							"key": "Pragma",
+							"value": "no-cache"
+						},
+						{
+							"key": "Expires",
+							"value": "0"
+						},
+						{
+							"key": "Strict-Transport-Security",
+							"value": "max-age=31536000 ; includeSubDomains"
+						},
+						{
+							"key": "X-Frame-Options",
+							"value": "DENY"
+						},
+						{
+							"key": "Content-Length",
+							"value": "0"
+						},
+						{
+							"key": "Date",
+							"value": "Wed, 01 Oct 2025 16:38:23 GMT"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=60"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						}
+					],
+					"cookie": [],
+					"body": null
+				}
+			]
+		},
+		{
+			"name": "5 - Refresh access token",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzYWNoaW4iLCJpYXQiOjE3NTkyMzQyODksImV4cCI6MTc1OTIzNTE4OX0.LCAheA1AHLw7Kw4YecXJDXSbuPg0so3GgQOfgjX8NZk",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"refreshToken\": \"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYWNoaW4iLCJ0eXBlIjoicmVmcmVzaCIsImV4cCI6MTc1OTk0MTYyNCwiaWF0IjoxNzU5MzM2ODI0fQ.We-ea9S6JUVdgQA_PwKoJBFwoTGIAOZxRC4YS_KNIj7X7HgW9U0GM9mRPUTo9X551JfbXUyddEXL5Xtwzjgj-A\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:8443/api/auth/refresh",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "8443",
+					"path": [
+						"api",
+						"auth",
+						"refresh"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "5 - Refresh access token",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"refreshToken\": \"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYWNoaW4iLCJ0eXBlIjoicmVmcmVzaCIsImV4cCI6MTc1OTg0OTczOCwiaWF0IjoxNzU5MjQ0OTM4fQ.HOukkNuQOjsT5VsnzsQdZA5TnEbL42AzhFixyiL5SiPBtyHmlSQx4v8tpSoz41lMki56ti1mgX-HskWjfyBUbg\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/auth/refresh",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"auth",
+								"refresh"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "X-Content-Type-Options",
+							"value": "nosniff"
+						},
+						{
+							"key": "X-XSS-Protection",
+							"value": "1; mode=block"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "no-cache, no-store, max-age=0, must-revalidate"
+						},
+						{
+							"key": "Pragma",
+							"value": "no-cache"
+						},
+						{
+							"key": "Expires",
+							"value": "0"
+						},
+						{
+							"key": "X-Frame-Options",
+							"value": "DENY"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Transfer-Encoding",
+							"value": "chunked"
+						},
+						{
+							"key": "Date",
+							"value": "Tue, 30 Sep 2025 15:09:58 GMT"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=60"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"accessToken\": \"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYWNoaW4iLCJyb2xlIjoiVVNFUiIsInR5cGUiOiJhY2Nlc3MiLCJleHAiOjE3NTkyNDU4OTgsImlhdCI6MTc1OTI0NDk5OH0.MWNsurFSmjN3SOip7CYTMJCBVC5nCGHRlHm4cEmbyx9fYUhwUfeZn33sTFsX80KfrPhf_w-TdQ4I1Pw8tJJIsA\",\n    \"refreshToken\": \"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYWNoaW4iLCJ0eXBlIjoicmVmcmVzaCIsImV4cCI6MTc1OTg0OTc5OCwiaWF0IjoxNzU5MjQ0OTk4fQ.NFqyYZJi-w-aDMXoIO98SZ_Qnab5DTU_dlTxg4Qv-vKCXfwRSYqC_elEigqA0fsg5F4k0Da_P_ZuHTxMIA__Kg\"\n}"
+				},
+				{
+					"name": "5 - Refresh access token (https)",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"refreshToken\": \"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYWNoaW4iLCJ0eXBlIjoicmVmcmVzaCIsImV4cCI6MTc1OTk0MTYyNCwiaWF0IjoxNzU5MzM2ODI0fQ.We-ea9S6JUVdgQA_PwKoJBFwoTGIAOZxRC4YS_KNIj7X7HgW9U0GM9mRPUTo9X551JfbXUyddEXL5Xtwzjgj-A\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:8443/api/auth/refresh",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "8443",
+							"path": [
+								"api",
+								"auth",
+								"refresh"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "X-Content-Type-Options",
+							"value": "nosniff"
+						},
+						{
+							"key": "X-XSS-Protection",
+							"value": "1; mode=block"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "no-cache, no-store, max-age=0, must-revalidate"
+						},
+						{
+							"key": "Pragma",
+							"value": "no-cache"
+						},
+						{
+							"key": "Expires",
+							"value": "0"
+						},
+						{
+							"key": "Strict-Transport-Security",
+							"value": "max-age=31536000 ; includeSubDomains"
+						},
+						{
+							"key": "X-Frame-Options",
+							"value": "DENY"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Transfer-Encoding",
+							"value": "chunked"
+						},
+						{
+							"key": "Date",
+							"value": "Wed, 01 Oct 2025 16:41:24 GMT"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=60"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"accessToken\": \"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYWNoaW4iLCJyb2xlIjoiVVNFUiIsInR5cGUiOiJhY2Nlc3MiLCJleHAiOjE3NTkzMzc3ODQsImlhdCI6MTc1OTMzNjg4NH0.JfVbq-3qvi_oJEYBXQVpLV0rpHTsZUv9Z36MbS7RK3NEvLMNPTtsPCDvKTqzRpS5QCT-CmNjDKtHK9Igk8j15Q\",\n    \"refreshToken\": \"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYWNoaW4iLCJ0eXBlIjoicmVmcmVzaCIsImV4cCI6MTc1OTk0MTY4NCwiaWF0IjoxNzU5MzM2ODg0fQ.0BsD57R9qYZdlFvXg98hBHjnc8qq7CJMVteqmFWO0Rl7AN7VnXEgw7zJlrwQ-C4TcW5M3ODhSCt-lGzlRPUuaw\"\n}"
 				}
 			]
 		},
@@ -471,187 +1287,23 @@
 					],
 					"cookie": [],
 					"body": "{\n    \"message\": \"User already logged out\",\n    \"timestamp\": \"2025-09-30T17:44:05.128417400Z\"\n}"
-				}
-			]
-		},
-		{
-			"name": "3 - Access authorized endpoint",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYWNoaW4iLCJyb2xlIjoiVVNFUiIsInR5cGUiOiJhY2Nlc3MiLCJleHAiOjE3NTkyNDU4MzgsImlhdCI6MTc1OTI0NDkzOH0.A-ef-qCdpKfeGkRH4YFvR2cCpcXFA49l6J3KSqKf2S0Lh038ker6_YVS043I5jNVvRLnjyWODTeS7jqyPEGbXw",
-							"type": "string"
-						}
-					]
 				},
-				"method": "GET",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"url": {
-					"raw": "http://localhost:8080/api/user/tasks",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						"api",
-						"user",
-						"tasks"
-					]
-				}
-			},
-			"response": [
 				{
-					"name": "3 - Access authorized endpoint",
-					"originalRequest": {
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "http://localhost:8080/api/user/tasks",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"user",
-								"tasks"
-							]
-						}
-					},
-					"status": "OK",
-					"code": 200,
-					"_postman_previewlanguage": "",
-					"header": [
-						{
-							"key": "X-Content-Type-Options",
-							"value": "nosniff"
-						},
-						{
-							"key": "X-XSS-Protection",
-							"value": "1; mode=block"
-						},
-						{
-							"key": "Cache-Control",
-							"value": "no-cache, no-store, max-age=0, must-revalidate"
-						},
-						{
-							"key": "Pragma",
-							"value": "no-cache"
-						},
-						{
-							"key": "Expires",
-							"value": "0"
-						},
-						{
-							"key": "X-Frame-Options",
-							"value": "DENY"
-						},
-						{
-							"key": "Content-Type",
-							"value": "application/json"
-						},
-						{
-							"key": "Transfer-Encoding",
-							"value": "chunked"
-						},
-						{
-							"key": "Date",
-							"value": "Tue, 30 Sep 2025 15:09:20 GMT"
-						},
-						{
-							"key": "Keep-Alive",
-							"value": "timeout=60"
-						},
-						{
-							"key": "Connection",
-							"value": "keep-alive"
-						}
-					],
-					"cookie": [],
-					"body": "{\n    \"tasks\": [\n        \"Task 1\",\n        \"Task 2\"\n    ],\n    \"timestamp\": \"2025-09-30T15:09:20.525121700Z\"\n}"
-				}
-			]
-		},
-		{
-			"name": "5 - Refresh access token",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzYWNoaW4iLCJpYXQiOjE3NTkyMzQyODksImV4cCI6MTc1OTIzNTE4OX0.LCAheA1AHLw7Kw4YecXJDXSbuPg0so3GgQOfgjX8NZk",
-							"type": "string"
-						}
-					]
-				},
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n  \"refreshToken\": \"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYWNoaW4iLCJ0eXBlIjoicmVmcmVzaCIsImV4cCI6MTc1OTg0OTczOCwiaWF0IjoxNzU5MjQ0OTM4fQ.HOukkNuQOjsT5VsnzsQdZA5TnEbL42AzhFixyiL5SiPBtyHmlSQx4v8tpSoz41lMki56ti1mgX-HskWjfyBUbg\"\r\n}\r\n",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "http://localhost:8080/api/auth/refresh",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						"api",
-						"auth",
-						"refresh"
-					]
-				}
-			},
-			"response": [
-				{
-					"name": "5 - Refresh access token",
+					"name": "6 - Logout (https)",
 					"originalRequest": {
 						"method": "POST",
 						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n  \"refreshToken\": \"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYWNoaW4iLCJ0eXBlIjoicmVmcmVzaCIsImV4cCI6MTc1OTg0OTczOCwiaWF0IjoxNzU5MjQ0OTM4fQ.HOukkNuQOjsT5VsnzsQdZA5TnEbL42AzhFixyiL5SiPBtyHmlSQx4v8tpSoz41lMki56ti1mgX-HskWjfyBUbg\"\r\n}\r\n",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
 						"url": {
-							"raw": "http://localhost:8080/api/auth/refresh",
-							"protocol": "http",
+							"raw": "https://localhost:8443/api/auth/logout",
+							"protocol": "https",
 							"host": [
 								"localhost"
 							],
-							"port": "8080",
+							"port": "8443",
 							"path": [
 								"api",
 								"auth",
-								"refresh"
+								"logout"
 							]
 						}
 					},
@@ -680,6 +1332,10 @@
 							"value": "0"
 						},
 						{
+							"key": "Strict-Transport-Security",
+							"value": "max-age=31536000 ; includeSubDomains"
+						},
+						{
 							"key": "X-Frame-Options",
 							"value": "DENY"
 						},
@@ -693,7 +1349,7 @@
 						},
 						{
 							"key": "Date",
-							"value": "Tue, 30 Sep 2025 15:09:58 GMT"
+							"value": "Wed, 01 Oct 2025 16:42:27 GMT"
 						},
 						{
 							"key": "Keep-Alive",
@@ -705,61 +1361,29 @@
 						}
 					],
 					"cookie": [],
-					"body": "{\n    \"accessToken\": \"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYWNoaW4iLCJyb2xlIjoiVVNFUiIsInR5cGUiOiJhY2Nlc3MiLCJleHAiOjE3NTkyNDU4OTgsImlhdCI6MTc1OTI0NDk5OH0.MWNsurFSmjN3SOip7CYTMJCBVC5nCGHRlHm4cEmbyx9fYUhwUfeZn33sTFsX80KfrPhf_w-TdQ4I1Pw8tJJIsA\",\n    \"refreshToken\": \"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYWNoaW4iLCJ0eXBlIjoicmVmcmVzaCIsImV4cCI6MTc1OTg0OTc5OCwiaWF0IjoxNzU5MjQ0OTk4fQ.NFqyYZJi-w-aDMXoIO98SZ_Qnab5DTU_dlTxg4Qv-vKCXfwRSYqC_elEigqA0fsg5F4k0Da_P_ZuHTxMIA__Kg\"\n}"
-				}
-			]
-		},
-		{
-			"name": "4 - Access unathorized endpoint",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYWNoaW4iLCJyb2xlIjoiVVNFUiIsInR5cGUiOiJhY2Nlc3MiLCJleHAiOjE3NTkyNDU4MzgsImlhdCI6MTc1OTI0NDkzOH0.A-ef-qCdpKfeGkRH4YFvR2cCpcXFA49l6J3KSqKf2S0Lh038ker6_YVS043I5jNVvRLnjyWODTeS7jqyPEGbXw",
-							"type": "string"
-						}
-					]
+					"body": "{\n    \"message\": \"Logged out successfully\",\n    \"timestamp\": \"2025-10-01T16:42:27.861151Z\"\n}"
 				},
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:8080/api/admin/dashboard",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						"api",
-						"admin",
-						"dashboard"
-					]
-				}
-			},
-			"response": [
 				{
-					"name": "4 - Access unathorized endpoint",
+					"name": "6 - User already logged out (https)",
 					"originalRequest": {
-						"method": "GET",
+						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8080/api/admin/dashboard",
-							"protocol": "http",
+							"raw": "https://localhost:8443/api/auth/logout",
+							"protocol": "https",
 							"host": [
 								"localhost"
 							],
-							"port": "8080",
+							"port": "8443",
 							"path": [
 								"api",
-								"admin",
-								"dashboard"
+								"auth",
+								"logout"
 							]
 						}
 					},
-					"status": "Forbidden",
-					"code": 403,
+					"status": "Bad Request",
+					"code": 400,
 					"_postman_previewlanguage": null,
 					"header": [
 						{
@@ -783,28 +1407,32 @@
 							"value": "0"
 						},
 						{
+							"key": "Strict-Transport-Security",
+							"value": "max-age=31536000 ; includeSubDomains"
+						},
+						{
 							"key": "X-Frame-Options",
 							"value": "DENY"
 						},
 						{
-							"key": "Content-Length",
-							"value": "0"
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Transfer-Encoding",
+							"value": "chunked"
 						},
 						{
 							"key": "Date",
-							"value": "Tue, 30 Sep 2025 15:09:43 GMT"
-						},
-						{
-							"key": "Keep-Alive",
-							"value": "timeout=60"
+							"value": "Wed, 01 Oct 2025 16:42:53 GMT"
 						},
 						{
 							"key": "Connection",
-							"value": "keep-alive"
+							"value": "close"
 						}
 					],
 					"cookie": [],
-					"body": null
+					"body": "{\n    \"message\": \"User already logged out\",\n    \"timestamp\": \"2025-10-01T16:42:53.466242200Z\"\n}"
 				}
 			]
 		}
