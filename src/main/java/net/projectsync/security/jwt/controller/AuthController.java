@@ -118,7 +118,15 @@ public class AuthController {
             // Revoke all refresh tokens for this user
             refreshTokenService.revokeTokensForUser(username);
             
-            SecurityContextHolder.clearContext();
+            /**
+             * - once request is complete (/api/user/tasks, /api/admin/dashboard) spring clears the context automatically. Below line is not needed)
+             * - we used logout method to clear entries in Redis
+             * 
+             * - But, in Spring Security, the SecurityContext always contains an Authentication object, even if nobody has logged in yet
+             * - If no authentication is set, Spring creates an anonymous authentication:
+             *   -- The principal is 'anonymousUser', Authorities are usually 'ROLE_ANONYMOUS'
+             */            
+            SecurityContextHolder.clearContext();SecurityContextHolder.getContext();
 
             return ResponseEntity.ok(Map.of(
                     "message", "Logged out successfully",
