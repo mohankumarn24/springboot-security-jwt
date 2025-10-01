@@ -13,21 +13,26 @@ public class CreateUsersStartUp {
 
 	@Bean
 	CommandLineRunner init(UserRepository userRepo, PasswordEncoder encoder) {
-		return args -> {
-			if (userRepo.findByUsername("admin").isEmpty()) {
-				User admin = new User();
-				admin.setUsername("admin");
-				admin.setPassword(encoder.encode("password"));
-				admin.setRole(Role.ADMIN);
-				userRepo.save(admin);
-			}
 
-			if (userRepo.findByUsername("user").isEmpty()) {
-				User user = new User();
-				user.setUsername("user");
-				user.setPassword(encoder.encode("password"));
-				user.setRole(Role.USER);
-				userRepo.save(user);
+		return new CommandLineRunner() {
+
+			@Override
+			public void run(String... args) throws Exception {
+				if (userRepo.findByUsername("admin").isEmpty()) {
+					User admin = new User();
+					admin.setUsername("admin");
+					admin.setPassword(encoder.encode("password"));
+					admin.setRole(Role.ADMIN);
+					userRepo.save(admin);
+				}
+
+				if (userRepo.findByUsername("user").isEmpty()) {
+					User user = new User();
+					user.setUsername("user");
+					user.setPassword(encoder.encode("password"));
+					user.setRole(Role.USER);
+					userRepo.save(user);
+				}
 			}
 		};
 	}
