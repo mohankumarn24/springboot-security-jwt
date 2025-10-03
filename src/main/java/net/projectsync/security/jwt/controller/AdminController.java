@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminController {
 
     @GetMapping("/dashboard")
-    @PreAuthorize("hasRole('ADMIN')") // ensures method-level security
+    @PreAuthorize("hasRole('ADMIN')") // ensures method-level security 
     public ResponseEntity<Map<String, Object>> getDashboard() {
     	
         Map<String, Object> response = new HashMap<>();
@@ -23,3 +23,7 @@ public class AdminController {
         return ResponseEntity.ok(response);
     }
 }
+
+/**
+ *  @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")         // Use hasRole for role-based access control 
+ */
