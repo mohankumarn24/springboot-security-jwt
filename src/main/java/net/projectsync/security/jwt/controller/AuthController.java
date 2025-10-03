@@ -152,6 +152,7 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<Map<String, Object>> logout(HttpServletRequest request, HttpServletResponse response) {
     	
+    	// access token not needed for logout. 
         Cookie[] cookies = request.getCookies();
 
         if (cookies == null) {
