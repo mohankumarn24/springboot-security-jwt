@@ -549,6 +549,94 @@
 					],
 					"cookie": [],
 					"body": "{\n    \"accessToken\": \"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYWNoaW4iLCJyb2xlIjoiVVNFUiIsInR5cGUiOiJhY2Nlc3MiLCJleHAiOjE3NTkzMzc0NzcsImlhdCI6MTc1OTMzNjU3N30.uKvAEhcwGB9GvbCn1c1wZRM1sn4YEP5rFlL04rrs-det5-oE2wwvDAL7D7Q3-n01F4_Uox7YfRcUN_ufkG06eQ\",\n    \"refreshToken\": \"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYWNoaW4iLCJ0eXBlIjoicmVmcmVzaCIsImV4cCI6MTc1OTk0MTM3NywiaWF0IjoxNzU5MzM2NTc3fQ.KhrQDamWz2YML8mk-DkP_DXFAb_4N2zoDkYXDKxsy_QWh4hn5-uQZJ18uld1Sbi1qcSQ1xLXGCAiiK7IkZKqKA\"\n}"
+				},
+				{
+					"name": "2 - Sign in",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"username\": \"sachin\",\r\n  \"password\": \"password\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:8443/api/auth/signin",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "8443",
+							"path": [
+								"api",
+								"auth",
+								"signin"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "",
+					"header": [
+						{
+							"key": "Set-Cookie",
+							"value": "refreshToken=eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYWNoaW4iLCJ0eXBlIjoicmVmcmVzaCIsImV4cCI6MTc2MDA4MzY2MiwiaWF0IjoxNzU5NDc4ODYyfQ.zfAU49B2bAXpJdOt7fTcxBpRnF0ykCIeSTpp8TYRnDr_aolaGpqe0gTpxyvcew1Rarl03lhy8tx9CyJR_t2bVA; Path=/api/auth; Max-Age=604800; Expires=Fri, 10 Oct 2025 08:07:42 GMT; Secure; HttpOnly; SameSite=Strict"
+						},
+						{
+							"key": "X-Content-Type-Options",
+							"value": "nosniff"
+						},
+						{
+							"key": "X-XSS-Protection",
+							"value": "1; mode=block"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "no-cache, no-store, max-age=0, must-revalidate"
+						},
+						{
+							"key": "Pragma",
+							"value": "no-cache"
+						},
+						{
+							"key": "Expires",
+							"value": "0"
+						},
+						{
+							"key": "Strict-Transport-Security",
+							"value": "max-age=31536000 ; includeSubDomains"
+						},
+						{
+							"key": "X-Frame-Options",
+							"value": "DENY"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Transfer-Encoding",
+							"value": "chunked"
+						},
+						{
+							"key": "Date",
+							"value": "Fri, 03 Oct 2025 08:07:42 GMT"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=60"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"accessToken\": \"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYWNoaW4iLCJyb2xlIjoiVVNFUiIsInR5cGUiOiJhY2Nlc3MiLCJleHAiOjE3NTk0Nzk3NjIsImlhdCI6MTc1OTQ3ODg2Mn0.JRiMWu2qkFUavHRYfkvTiim5v3330H22YvnzSwtneYSTyc4JzgdOw4XQ_tMRkBEr3AZGe92HfGRlWkdTTasjcw\"\n}"
 				}
 			]
 		},
@@ -742,6 +830,85 @@
 					],
 					"cookie": [],
 					"body": "{\n    \"tasks\": [\n        \"Task 1\",\n        \"Task 2\"\n    ],\n    \"timestamp\": \"2025-10-01T16:37:58.419337900Z\"\n}"
+				},
+				{
+					"name": "3 - Access authorized endpoint",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://localhost:8443/api/user/tasks",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "8443",
+							"path": [
+								"api",
+								"user",
+								"tasks"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "",
+					"header": [
+						{
+							"key": "X-Content-Type-Options",
+							"value": "nosniff"
+						},
+						{
+							"key": "X-XSS-Protection",
+							"value": "1; mode=block"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "no-cache, no-store, max-age=0, must-revalidate"
+						},
+						{
+							"key": "Pragma",
+							"value": "no-cache"
+						},
+						{
+							"key": "Expires",
+							"value": "0"
+						},
+						{
+							"key": "Strict-Transport-Security",
+							"value": "max-age=31536000 ; includeSubDomains"
+						},
+						{
+							"key": "X-Frame-Options",
+							"value": "DENY"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Transfer-Encoding",
+							"value": "chunked"
+						},
+						{
+							"key": "Date",
+							"value": "Fri, 03 Oct 2025 08:07:55 GMT"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=60"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"tasks\": [\n        \"Task 1\",\n        \"Task 2\"\n    ],\n    \"timestamp\": \"2025-10-03T08:07:55.425868600Z\"\n}"
 				}
 			]
 		},
@@ -1117,6 +1284,85 @@
 					],
 					"cookie": [],
 					"body": "{\n    \"accessToken\": \"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYWNoaW4iLCJyb2xlIjoiVVNFUiIsInR5cGUiOiJhY2Nlc3MiLCJleHAiOjE3NTkzMzc3ODQsImlhdCI6MTc1OTMzNjg4NH0.JfVbq-3qvi_oJEYBXQVpLV0rpHTsZUv9Z36MbS7RK3NEvLMNPTtsPCDvKTqzRpS5QCT-CmNjDKtHK9Igk8j15Q\",\n    \"refreshToken\": \"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYWNoaW4iLCJ0eXBlIjoicmVmcmVzaCIsImV4cCI6MTc1OTk0MTY4NCwiaWF0IjoxNzU5MzM2ODg0fQ.0BsD57R9qYZdlFvXg98hBHjnc8qq7CJMVteqmFWO0Rl7AN7VnXEgw7zJlrwQ-C4TcW5M3ODhSCt-lGzlRPUuaw\"\n}"
+				},
+				{
+					"name": "5 - Refresh access token",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:8443/api/auth/refresh",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "8443",
+							"path": [
+								"api",
+								"auth",
+								"refresh"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "",
+					"header": [
+						{
+							"key": "Set-Cookie",
+							"value": "refreshToken=eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYWNoaW4iLCJ0eXBlIjoicmVmcmVzaCIsImV4cCI6MTc2MDA4MzcwMSwiaWF0IjoxNzU5NDc4OTAxfQ.lsKm3061N99NJ8yvnNLzVXDbno06lqZjh_Rxkw5tI3TUuG57f4g9Dyerlz2cc35B84jZOmRE08AARudmRar8TA; Path=/api/auth; Max-Age=604800; Expires=Fri, 10 Oct 2025 08:08:21 GMT; Secure; HttpOnly; SameSite=Strict"
+						},
+						{
+							"key": "X-Content-Type-Options",
+							"value": "nosniff"
+						},
+						{
+							"key": "X-XSS-Protection",
+							"value": "1; mode=block"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "no-cache, no-store, max-age=0, must-revalidate"
+						},
+						{
+							"key": "Pragma",
+							"value": "no-cache"
+						},
+						{
+							"key": "Expires",
+							"value": "0"
+						},
+						{
+							"key": "Strict-Transport-Security",
+							"value": "max-age=31536000 ; includeSubDomains"
+						},
+						{
+							"key": "X-Frame-Options",
+							"value": "DENY"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Transfer-Encoding",
+							"value": "chunked"
+						},
+						{
+							"key": "Date",
+							"value": "Fri, 03 Oct 2025 08:08:21 GMT"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=60"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"accessToken\": \"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYWNoaW4iLCJyb2xlIjoiVVNFUiIsInR5cGUiOiJhY2Nlc3MiLCJleHAiOjE3NTk0Nzk4MDEsImlhdCI6MTc1OTQ3ODkwMX0.GyXv_B_JSIjmh503zWCHuIUoLNn5_1KSnmIOpu1rKmR3UJ6pevacsayo6JupDC-6G_SCgfcsFRUZbIealCmkSw\"\n}"
 				}
 			]
 		},
