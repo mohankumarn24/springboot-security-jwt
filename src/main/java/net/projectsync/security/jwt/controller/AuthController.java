@@ -203,7 +203,10 @@ public class AuthController {
                 "timestamp", Instant.now()
         ));
         
-    	/* OLD CODE
+        // Refer Note1: why 'SecurityContextHolder.clearContext()' is not needed in this scenario
+
+        
+        /* OLD CODE: Refresh token was being sent along with access token in response body which is incorrect approach
         String authHeader = request.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String accessToken = authHeader.substring(7);
@@ -247,4 +250,32 @@ Refresh Token Handling: Stored in DB via RefreshTokenService and revoked on refr
 Redis TTL: Access tokens automatically expire in Redis according to JWT expiry.
 Simple Map Responses: Includes timestamp for debugging/logging.
 Exception Handling: Uses ResponseStatusException for 401 Unauthorized.
+*/
+
+
+/* NOTE1
+1. Purpose of SecurityContextHolder.clearContext():
+	   - Clears the SecurityContext for the current thread.
+	   - Removes the Authentication object (logged-in user info).
+
+	2. In a stateless JWT setup:
+	   - SessionCreationPolicy.STATELESS → no HTTP session is used.
+	   - Authentication is derived from JWT on each request via JwtAuthFilter.
+	   - Spring automatically clears the thread-local SecurityContext after the request ends.
+	   - Therefore, calling clearContext() in logout is optional.
+
+	3. When to use it:
+	   - Only needed in stateful session-based setups.
+	   - Useful if doing programmatic login/logout and want to clear thread-local immediately.
+
+	4. Conclusion:
+	   - In your stateless JWT + refresh token system, you can safely remove it.
+	   - Logout will still:
+	     a) Revoke refresh tokens in Redis.
+	     b) Clear HttpOnly cookies.
+	     c) Fail access with expired/invalid tokens on next request.
+
+	5. Recommendation:
+	   - Optional: keep for clarity, but not required.
+
 */
