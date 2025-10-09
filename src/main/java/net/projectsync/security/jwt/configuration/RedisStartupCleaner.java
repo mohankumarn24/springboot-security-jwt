@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-@Profile("dev") // Only runs in 'dev' profile
+// @Profile("dev") // Only runs in 'dev' profile
 public class RedisStartupCleaner {
 
 	private final RedisTemplate<String, String> redisTemplate;
