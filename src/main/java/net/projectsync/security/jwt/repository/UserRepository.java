@@ -6,5 +6,6 @@ import net.projectsync.security.jwt.entity.User;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 	
+	// Custom query method to fetch user by username
 	Optional<User> findByUsername(String username);
 }

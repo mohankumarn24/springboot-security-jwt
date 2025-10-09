@@ -1,7 +1,6 @@
 package net.projectsync.security.jwt.filter;
 
 import java.io.IOException;
-import java.time.Instant;
 import java.util.Collections;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -16,7 +15,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
-import net.projectsync.security.jwt.entity.User;
+import net.projectsync.security.jwt.model.Role;
 import net.projectsync.security.jwt.repository.UserRepository;
 import net.projectsync.security.jwt.service.JwtService;
 
@@ -32,35 +31,53 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain chain) throws ServletException, IOException {
 
+        // 1️. Skip authentication for /api/auth endpoints (login, signup, refresh, logout)
         String path = request.getServletPath();
         if (path.startsWith("/api/auth/")) {
-            chain.doFilter(request, response); // skip auth endpoints
+            chain.doFilter(request, response);
             return;
         }
 
+        // 2️. Extract Bearer token from Authorization header
         String authHeader = request.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7);
+            String token = authHeader.substring(7); // remove "Bearer " prefix
+
             try {
+                // 3️. Extract username from JWT
                 String username = jwtService.extractUsername(token);
+
+                // 4️. If username exists and SecurityContext is not yet set
                 if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                    // Extract role directly from JWT. Now authentication is purely from token claims → fully stateless
-                    String role = jwtService.extractAllClaims(token).get("role", String.class);
-                    if (role == null) {
+
+                    // 4a️. Extract role directly from JWT claims
+                    String roleName = jwtService.extractAllClaims(token).get("role", String.class);
+
+                    // 4b️. Validate role presence
+                    if (roleName == null) {
                         response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Role not found in token");
                         return;
-                    }   
-                    
-                    // Create authentication token and set in context
+                    }
+
+                    // 4c️. Convert role string to Role enum
+                    Role role;
+                    try {
+                        role = Role.valueOf(roleName);
+                    } catch (IllegalArgumentException e) {
+                        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid role in token");
+                        return;
+                    }
+
+                    // 4d️. Set authentication in Spring Security context
                     UsernamePasswordAuthenticationToken authToken =
                             new UsernamePasswordAuthenticationToken(
                                     username,
                                     null,
-                                    Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role)) // TODO: remove hardcoding
+                                    Collections.singletonList(new SimpleGrantedAuthority(role.asSpringRole()))
                             );
                     SecurityContextHolder.getContext().setAuthentication(authToken);
-                    
-                	/*
+                	
+                    /*
                     User user = userRepository.findByUsername(username).orElse(null); // hits db, impacts performance. Refer Note1
                     if (user != null) {
                         String role = user.getRole().asSpringRole();	// we can get this from token itself, if we have added it in claims
@@ -70,51 +87,22 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                 Collections.singletonList(new SimpleGrantedAuthority(role)));
                         SecurityContextHolder.getContext().setAuthentication(authToken);
                     }
-                    */              	
+                    */                      
                 }
-            } catch (ExpiredJwtException e) {
-                sendUnauthorized(response, "Access token expired");
-                return;                
-            } catch (JwtException e) {
+            } 
+            // 5️. Handle expired JWT
+            catch (ExpiredJwtException e) {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Access token expired");
+                return;
+            } 
+            // 6️. Handle invalid JWT
+            catch (JwtException e) {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
                 return;
             }
         }
 
+        // 7️. Continue filter chain
         chain.doFilter(request, response);
     }
-    
-    /**
-     * when an access token is expired, the response is a structured JSON with an explicit code/message. 
-     * This makes it much easier for the frontend to detect an expired token and trigger a refresh.
-	 *
-     * Structured JSON 401 response
-     * {
-     *	 "error": "Access token expired",
-     *   "timestamp": "2025-10-03T12:34:56Z"
-	 * }
-	 * 
-	 * Frontend can now detect "Access token expired" and call /refresh automatically
-	 * 
-	 * Frontend Usage:
-     * try {
-     *     const data = await fetch("/api/user/tasks", { 
-     *         headers: { Authorization: `Bearer ${accessToken}` } 
-     *     });
-     *     if (data.error === "Access token expired") {
-     *         // call /refresh, update accessToken, retry
-     *     }
-     * } catch (err) {
-     *     console.error(err);
-     * }
-     */
-    private void sendUnauthorized(HttpServletResponse response, String message) throws IOException {
-    	
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.setContentType("application/json");
-        String body = String.format("{\"error\":\"%s\",\"timestamp\":\"%s\"}", message, Instant.now());
-        response.getWriter().write(body);
-    }
 }
-
-

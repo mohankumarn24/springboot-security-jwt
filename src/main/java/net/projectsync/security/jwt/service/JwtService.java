@@ -9,10 +9,14 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import lombok.RequiredArgsConstructor;
 import net.projectsync.security.jwt.model.Role;
 
 @Service
+@RequiredArgsConstructor
 public class JwtService {
+
+    private final RefreshTokenService refreshTokenService;
 
     @Value("${jwt.secret}")
     private String secret;
@@ -23,19 +27,22 @@ public class JwtService {
     @Value("${jwt.refresh-expiration-ms}")
     private long refreshExpirationMs;
 
+    // 1️. Generate an access token with username + role claims
     public String generateAccessToken(String username, Role role) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("role", role.name());   // useful for quick auth decisions
-        claims.put("type", "access");      // explicit marker
+        claims.put("role", role.name());
+        claims.put("type", "access");
         return createToken(claims, username, accessExpirationMs);
     }
 
+    // 2️. Generate a refresh token (minimal claims)
     public String generateRefreshToken(String username) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("type", "refresh");
         return createToken(claims, username, refreshExpirationMs);
     }
 
+    // 3️. Generic token creation
     private String createToken(Map<String, Object> claims, String subject, long ttlMillis) {
         long now = System.currentTimeMillis();
         return Jwts.builder()
@@ -47,6 +54,7 @@ public class JwtService {
                 .compact();
     }
 
+    // 4️. Extract all claims from JWT (validates signature & expiration)
     public Claims extractAllClaims(String token) {
         return Jwts.parser()
                 .setSigningKey(secret)
@@ -54,19 +62,27 @@ public class JwtService {
                 .getBody();
     }
 
+    // 5️. Extract username (subject) from JWT
     public String extractUsername(String token) {
         try {
             return extractAllClaims(token).getSubject();
         } catch (JwtException | IllegalArgumentException e) {
-            return null;
+            return null; // token invalid or expired
         }
     }
 
-    public boolean isRefreshToken(String token) {
+    // 6️. Validate refresh token (type + Redis existence)
+    public boolean isValidRefreshToken(String token) {
         try {
-            return "refresh".equals(extractAllClaims(token).get("type", String.class));
-        } catch (JwtException e) {
-            return false;
+            // a. Check token type
+            String tokenType = extractAllClaims(token).get("type", String.class);
+            if (!"refresh".equals(tokenType)) return false;
+
+            // b. Check Redis to prevent reuse
+            return refreshTokenService.isValid(token);
+
+        } catch (JwtException | IllegalArgumentException e) {
+            return false; // invalid, expired, or tampered
         }
     }
 }
