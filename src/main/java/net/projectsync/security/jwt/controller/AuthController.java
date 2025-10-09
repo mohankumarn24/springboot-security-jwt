@@ -100,6 +100,9 @@ public class AuthController {
                 .path(COOKIE_PATH)							// Defines which URL path the cookie applies to. Recommended: Limit path to 'refresh' endpoint only
                 .maxAge(REFRESH_COOKIE_MAX_AGE_SECONDS)     // Cookie lifetime in seconds. (REFRESH_COOKIE_MAX_AGE_MS = REFRESH_COOKIE_MAX_AGE_SECONDS * 1000)
                 .sameSite("Strict")                         // Restricts cross-site cookie sending. Provides CSRF protection. Adjust for cross-domain if needed
+                											// CSRF is already disabled in SecurityConfig. But refresh token is technically a stateful cookie
+                											// So, if you were worried about CSRF here, you might want CSRF just for that endpoint
+                											// Using SameSite=Strict already mitigates most CSRF attacks because browsers won’t send the cookie in cross-site requests
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());    
 
