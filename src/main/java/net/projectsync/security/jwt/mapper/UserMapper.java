@@ -22,11 +22,14 @@ public class UserMapper {
 
     // Optional: convert UserDTO to entity (e.g., for updates)
     public static User toEntity(UserDTO dto, User existingUser) {
-        if (dto == null) return null;
+    	
+        if (dto == null || existingUser == null) {
+            return existingUser;
+        }
 
         existingUser.setUsername(dto.getUsername());
-        existingUser.setRole(Role.valueOf(dto.getRole()));
-        // Don't set password here
+        existingUser.setRole(Role.valueOf(dto.getRole()));	// convert string to enum
+        // Password is not updated here for security reasons
         return existingUser;
     }
 }

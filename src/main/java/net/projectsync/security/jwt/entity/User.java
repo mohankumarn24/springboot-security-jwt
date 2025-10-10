@@ -1,31 +1,17 @@
 package net.projectsync.security.jwt.entity;
 
 import java.time.Instant;
+import javax.persistence.*;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
-import javax.persistence.Table;
-import lombok.*;
 import net.projectsync.security.jwt.model.Role;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
 @Table(
-	    name = "users",
-	    indexes = {
-	        @Index(name = "idx_username", columnList = "username")	// If you have frequent searches by username, consider adding @Index for performance
-	    }
-	)
+    name = "users",
+    indexes = {
+        @Index(name = "idx_username", columnList = "username")	// If you have frequent searches by username, consider adding @Index for performance
+    }
+)
 public class User {
 
     @Id
@@ -48,6 +34,39 @@ public class User {
     @Column(nullable = false)
     private Instant updatedAt;
 
+    // No-args constructor
+    public User() {}
+
+    // All-args constructor
+    public User(Long id, String username, String password, Role role, Instant createdAt, Instant updatedAt) {
+        this.id = id;
+        this.username = username;
+        this.password = password;
+        this.role = role;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
+
+    // Getters and setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
+
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
+
+    public Role getRole() { return role; }
+    public void setRole(Role role) { this.role = role; }
+
+    public Instant getCreatedAt() { return createdAt; }
+    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
+
+    public Instant getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
+
+    // Lifecycle callbacks
     @PrePersist
     protected void onCreate() {
         Instant now = Instant.now();

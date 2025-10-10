@@ -10,10 +10,10 @@ public class UserDTO {
     private Instant createdAt;
     private Instant updatedAt;
 
-    // Constructors
-    public UserDTO() {
-    }
+    // No-args constructor
+    public UserDTO() {}
 
+    // All-args constructor
     public UserDTO(Long id, String username, String role, Instant createdAt, Instant updatedAt) {
         this.id = id;
         this.username = username;
@@ -22,45 +22,45 @@ public class UserDTO {
         this.updatedAt = updatedAt;
     }
 
-    // Getters and setters
+    // Getters
     public Long getId() {
         return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public String getUsername() {
         return username;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
     public String getRole() {
         return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
     }
 
     public Instant getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Instant createdAt) {
-        this.createdAt = createdAt;
-    }
-
     public Instant getUpdatedAt() {
         return updatedAt;
+    }
+
+    // Setters (optional, for mutability)
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
     }
 
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
     }
 }
-

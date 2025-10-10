@@ -1,31 +1,26 @@
 package net.projectsync.security.jwt.controller;
 
-import java.time.Instant;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import net.projectsync.security.jwt.dto.ApiResponse;
+import net.projectsync.security.jwt.util.ApiResponse;
+import net.projectsync.security.jwt.util.ResponseUtil;
 
 @RestController
 @RequestMapping("/api/admin")
 public class AdminController {
 
     @GetMapping("/dashboard")
-    @PreAuthorize("hasRole('ADMIN')")  // ensures method-level security 
+    @PreAuthorize("hasRole('ADMIN')")  // Method-level security
     public ResponseEntity<ApiResponse<Void>> getDashboard() {
-
-        ApiResponse<Void> response = new ApiResponse<>(
-                "Admin dashboard",
-                Instant.now(),
-                null  // no additional data
-        );
-        return ResponseEntity.ok(response);
+        return ResponseUtil.buildResponse("Admin dashboard", null, HttpStatus.OK);
     }
 }
 
-
 /**
- *  @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")         // Use hasRole for role-based access control 
+ * Optional example for multiple roles:
+ * @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
  */

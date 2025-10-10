@@ -30,8 +30,8 @@ public class JwtService {
     // 1️. Generate an access token with username + role claims
     public String generateAccessToken(String username, Role role) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("role", role.name());
         claims.put("type", "access");
+        claims.put("role", role.name());
         return createToken(claims, username, accessExpirationMs);
     }
 

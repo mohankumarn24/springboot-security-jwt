@@ -1,10 +1,11 @@
 package net.projectsync.security.jwt.model;
 
+// Enum representing user roles.
 public enum Role {
-    ADMIN,
+	ADMIN,
     USER;
 
-    // Optional: get Spring Security format
+	// Returns the role in Spring Security format: "ROLE_ADMIN", "ROLE_USER". Useful for authorities in SecurityContext.
     public String asSpringRole() {
         return "ROLE_" + this.name();
     }

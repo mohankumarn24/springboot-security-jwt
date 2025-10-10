@@ -1,8 +1,6 @@
 package net.projectsync.security.jwt.configuration;
 
 import java.util.List;
-
-import javax.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -15,6 +13,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import lombok.RequiredArgsConstructor;
+import net.projectsync.security.jwt.exception.JwtAccessDeniedHandler;
+import net.projectsync.security.jwt.exception.JwtAuthenticationEntryPoint;
 import net.projectsync.security.jwt.filter.JwtAuthFilter;
 
 @Configuration
@@ -23,7 +23,9 @@ import net.projectsync.security.jwt.filter.JwtAuthFilter;
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
-
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
+    
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     	
@@ -51,11 +53,19 @@ public class SecurityConfig {
 	        // - Handles unauthenticated requests (when a user accesses a protected endpoint without a token).
 	        // - Returns JSON instead of the default HTML login page.
 	        // - Gives a consistent API error response
+	        /*
 	        .exceptionHandling(ex -> ex.authenticationEntryPoint((req, res, authEx) -> {
 	            res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 	            res.setContentType("application/json");
 	            res.getWriter().write("{\"error\":\"Unauthorized\"}");
-	        }))	        
+	        }))
+	        */
+	        .exceptionHandling(ex -> ex
+	        	    .authenticationEntryPoint(jwtAuthenticationEntryPoint) 	// 401
+	        	    .accessDeniedHandler(jwtAccessDeniedHandler)           	// 403
+	        	)															// GlobalExceptionHandler is for exceptions thrown inside controller methods.
+	        																// AuthenticationEntryPoint / AccessDeniedHandler is for pre-controller, filter-chain security exceptions (401 / 403)
+	        																// TO FIX: (Ex: Access /api/user/** endpoint without access token -> 401: "Full authentication is required to access this resource")
 	        .authorizeHttpRequests(auth -> auth
 	            .antMatchers("/api/auth/**").permitAll()			// public endpoints (login/register, etc.). No authentication is required to access these endpoints
 	            .antMatchers("/api/admin/**").hasRole("ADMIN")		// only accessible by users with role ADMIN. JWT authentication needed

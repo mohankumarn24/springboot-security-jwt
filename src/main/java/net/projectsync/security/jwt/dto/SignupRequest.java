@@ -18,6 +18,16 @@ public class SignupRequest {
     @Pattern(regexp = "USER|ADMIN", message = "Role must be either USER or ADMIN")
     private String role;
 
+    // No-args constructor
+    public SignupRequest() {}
+
+    // All-args constructor
+    public SignupRequest(String username, String password, String role) {
+        this.username = username;
+        this.password = password;
+        this.role = role;
+    }
+    
     // Getters and setters
     public String getUsername() {
         return username;

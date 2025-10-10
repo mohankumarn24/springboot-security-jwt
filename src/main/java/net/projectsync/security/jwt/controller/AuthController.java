@@ -1,7 +1,6 @@
 package net.projectsync.security.jwt.controller;
 
 import java.time.Instant;
-import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpHeaders;
@@ -14,18 +13,22 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 import lombok.RequiredArgsConstructor;
-import net.projectsync.security.jwt.dto.ApiResponse;
 import net.projectsync.security.jwt.dto.SignInRequest;
 import net.projectsync.security.jwt.dto.SignupRequest;
+import net.projectsync.security.jwt.dto.TokenResponse;
 import net.projectsync.security.jwt.dto.UserDTO;
 import net.projectsync.security.jwt.entity.User;
+import net.projectsync.security.jwt.exception.BadRequestException;
+import net.projectsync.security.jwt.exception.ConflictException;
+import net.projectsync.security.jwt.exception.ForbiddenException;
+import net.projectsync.security.jwt.exception.UnauthorizedException;
 import net.projectsync.security.jwt.mapper.UserMapper;
 import net.projectsync.security.jwt.model.Role;
 import net.projectsync.security.jwt.repository.UserRepository;
 import net.projectsync.security.jwt.service.JwtService;
 import net.projectsync.security.jwt.service.RefreshTokenService;
+import net.projectsync.security.jwt.util.ApiResponse;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -37,52 +40,51 @@ public class AuthController {
     private final UserRepository userRepository;
     private final PasswordEncoder encoder;
 
-    private static final String COOKIE_PATH = "/api/auth"; // sends cookie to '/api/auth/signup', '/api/auth/signin', '/api/auth/refresh' and '/api/auth/logout'
-    private static final long REFRESH_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 7; // 7 days
+    private static final String REFRESH_COOKIE_NAME = "refreshToken";				// cookie name
+    private static final String COOKIE_PATH = "/api/auth"; 							// sends cookie to '/api/auth/signup', '/api/auth/signin', '/api/auth/refresh' and '/api/auth/logout'
+    private static final long REFRESH_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 7; 	// 7 days
     
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse<UserDTO>> signup(@RequestBody SignupRequest request) {
 
         // 1️. Check if username already exists
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already exists");
+            throw new ConflictException("Username already exists");
         }
 
         // 2️. Create new user
         User user = new User();
         user.setUsername(request.getUsername());
-        user.setPassword(encoder.encode(request.getPassword())); 			// Secure password hashing
+        user.setPassword(encoder.encode(request.getPassword()));
         try {
-            user.setRole(Role.valueOf(request.getRole().toUpperCase())); 	// Ensure role is valid
+            user.setRole(Role.valueOf(request.getRole().toUpperCase()));
         } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid role");
+            throw new BadRequestException("Invalid role");
         }
-
+        
         // 3️. Save user
         userRepository.save(user);
 
-        // 4️. Convert user to userDto
-        UserDTO dto = UserMapper.toDTO(user);
-        ApiResponse<UserDTO> response = new ApiResponse<>("User registered successfully", Instant.now(), dto);
-        
-        // 5. Return success
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        // 4️. Return API response
+        ApiResponse<UserDTO> apiResponse = new ApiResponse<>("User registered successfully", Instant.now(),  UserMapper.toDTO(user));
+        return ResponseEntity.status(HttpStatus.CREATED).body(apiResponse);
     }
 
+    
     @PostMapping("/signin")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> signin(@RequestBody SignInRequest request, HttpServletResponse response) {
+    public ResponseEntity<ApiResponse<TokenResponse>> signin(@RequestBody SignInRequest request, HttpServletResponse response) {
 
         // 1️. Fetch user and verify credentials
         User user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials"));
+                .orElseThrow(() -> new UnauthorizedException("Invalid credentials"));
 
         if (!encoder.matches(request.getPassword(), user.getPassword())) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
+            throw new UnauthorizedException("Invalid credentials");
         }
 
         // 2️. Optional: prevent multiple logins per user
         if (refreshTokenService.hasActiveRefreshTokens(user.getUsername())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User already logged in");
+            throw new ForbiddenException("User already logged in");
         }
 
         // 3️. Generate JWT tokens
@@ -93,11 +95,11 @@ public class AuthController {
         refreshTokenService.saveRefreshToken(refreshToken, user.getUsername());
 
         // 5️. Set refresh token as HttpOnly, Secure, SameSite cookie
-        ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
+        ResponseCookie cookie = ResponseCookie.from(REFRESH_COOKIE_NAME, refreshToken)	// cookie name & cookie value
                 .httpOnly(true)                             // JS cannot access (mitigates XSS i.e, Cross Site Scripting))
                 .secure(true)                               // Only sent over HTTPS
                 // .path("/api/auth/refresh")               // Limit cookie to refresh endpoint
-                .path("/api/auth")							// Cookie is sent automatically for '/api/auth/**' ==> ie. '/api/auth/signup', '/api/auth/signin', '/api/auth/refresh', '/api/auth/logout'
+                .path(COOKIE_PATH)							// Cookie is sent automatically for '/api/auth/**' ==> ie. '/api/auth/signup', '/api/auth/signin', '/api/auth/refresh', '/api/auth/logout'
                 											// ✅ '/signup' and '/signin' technically receive the cookie, but they don’t use it, and that’s 100% safe and standard.
                 											// iff we have to restrict cookie only to '/refresh' and '/logout' then use path="/api/auth/refresh" and move logout endpoint under '/api/auth/refresh/logout'
                 .maxAge(REFRESH_COOKIE_MAX_AGE_SECONDS)     // Cookie lifetime in seconds. (REFRESH_COOKIE_MAX_AGE_MS = REFRESH_COOKIE_MAX_AGE_SECONDS * 1000)
@@ -107,24 +109,18 @@ public class AuthController {
                 											// Using SameSite=Strict already mitigates most CSRF attacks because browsers won’t send the cookie in cross-site requests
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());    
+        													// If a cookie named "refreshToken" already exists with the same path and domain, the browser/Postman automatically replaces it.
+        													// Old cookie is deleted and replaced; you do not need manual deletion.
 
-        // 6. Convert user to userDto
-        UserDTO dto = UserMapper.toDTO(user);
-        Map<String, Object> data = Map.of(
-                "accessToken", accessToken,
-                "user", dto
-        );
-
-        // 7. Return access token in JSON. SPA should store in memory only (not localStorage or sessionStorage) to minimize XSS risk
-        ApiResponse<Map<String, Object>> apiResponse = new ApiResponse<>("Signed in successfully", Instant.now(), data);
+        // 6. Return access token in JSON. SPA should store in memory only (not localStorage or sessionStorage) to minimize XSS risk
+        TokenResponse tokenResponse = new TokenResponse(accessToken, UserMapper.toDTO(user));
+        ApiResponse<TokenResponse> apiResponse = new ApiResponse<>("Signed in successfully", Instant.now(), tokenResponse);
         return ResponseEntity.ok(apiResponse);
     }
 
 
     @PostMapping("/refresh")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> refresh(@CookieValue(name = "refreshToken", required = false) String oldRefreshToken,
-    													HttpServletRequest request, 
-    													HttpServletResponse response) {
+    public ResponseEntity<ApiResponse<TokenResponse>> refresh(@CookieValue(name = REFRESH_COOKIE_NAME, required = false) String oldRefreshToken, HttpServletResponse response) {
 
     	/*
         // Read refresh token from cookie
@@ -142,24 +138,24 @@ public class AuthController {
     	
         // 1️. Check if cookie exists
         if (oldRefreshToken == null || oldRefreshToken.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Refresh token missing");
+            throw new UnauthorizedException("Refresh token missing");
         }
 
         // 2️. Validate refresh token signature and expiration
         if (!jwtService.isValidRefreshToken(oldRefreshToken)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid or expired refresh token");
+            throw new UnauthorizedException("Invalid or expired refresh token");
         }
 
         // 3️. Validate against Redis (or DB) to prevent reuse
         String username = refreshTokenService.getUsernameForRefreshToken(oldRefreshToken)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Refresh token not recognized"));
+                .orElseThrow(() -> new UnauthorizedException("Refresh token not recognized"));
 
         // 4️. Revoke old refresh token for the user (in user set username:sachin as well as token123 -> sachin)
         refreshTokenService.revokeSingleRefreshToken(oldRefreshToken);
 
         // 5️. Generate new access token and refresh token
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
+                .orElseThrow(() -> new UnauthorizedException("User not found"));
 
         String newAccessToken = jwtService.generateAccessToken(username, user.getRole());
         String newRefreshToken = jwtService.generateRefreshToken(username);
@@ -168,61 +164,56 @@ public class AuthController {
         refreshTokenService.saveRefreshToken(newRefreshToken, username);
 
         // 7️. Set new refresh token in HttpOnly, Secure, SameSite cookie
-        ResponseCookie cookie = ResponseCookie.from("refreshToken", newRefreshToken)
+        ResponseCookie cookie = ResponseCookie.from(REFRESH_COOKIE_NAME, newRefreshToken)	// cookie name & cookie value
                 .httpOnly(true)                             // JS cannot access (protects against XSS)
                 .secure(true)                               // HTTPS only
-                .path("/api/auth")    		                // Limit cookie to auth endpoint
+                .path(COOKIE_PATH)    		                // Limit cookie to auth endpoint. (If path is different old cookie will not be replaced and new cookie will be created)
                 .maxAge(REFRESH_COOKIE_MAX_AGE_SECONDS)     // Lifetime in seconds
                 .sameSite("Strict")                         // Protect against CSRF (use 'Lax' or 'None' if cross-domain). (HttpOnly + Secure + SameSite: All refresh cookies are protected)
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-
-        // 8. Convert user to userDto
-        UserDTO dto = UserMapper.toDTO(user);
-        Map<String, Object> data = Map.of(
-                "accessToken", newAccessToken,
-                "user", dto
-        );
+        													// You revoke the old token in Redis.
+        													// You generate a new refresh token and send it in the same cookie name + path.
+        													// Browser/Postman automatically replaces the old cookie with the new one.
 
         // 8️. Return new access token (SPA stores it in memory only)
-        ApiResponse<Map<String, Object>> apiResponse = new ApiResponse<>("Access token and Refresh token refreshed successfully", Instant.now(), data);
+        TokenResponse tokenResponse = new TokenResponse(newAccessToken, UserMapper.toDTO(user));
+        ApiResponse<TokenResponse> apiResponse = new ApiResponse<>("Access token and Refresh token refreshed successfully", Instant.now(), tokenResponse);
         return ResponseEntity.ok(apiResponse);
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponse<Void>> logout(@CookieValue(name="refreshToken", required = false) String refreshToken, HttpServletResponse response) {
-
-        Instant now = Instant.now();
+    public ResponseEntity<ApiResponse<Void>> logout(@CookieValue(name=REFRESH_COOKIE_NAME, required = false) String refreshToken, 
+													             HttpServletResponse response) {
 
         // 1️. If no refresh token, user is effectively already logged out
         if (refreshToken == null || refreshToken.isBlank()) {
-            ApiResponse<Void> apiResponse = new ApiResponse<>("User already logged out", now, null);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiResponse);
+            throw new BadRequestException("User already logged out");
         }
 
         // 2️. Extract username from refresh token
         String username = jwtService.extractUsername(refreshToken);
-
         if (username == null || !refreshTokenService.hasActiveRefreshTokens(username)) {
-            ApiResponse<Void> apiResponse = new ApiResponse<>("User already logged out", now, null);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiResponse);
+            throw new BadRequestException("User already logged out");
         }
 
         // 3️. Revoke all refresh tokens for the user (in user set username:sachin as well as token123 -> sachin) during logout
         refreshTokenService.revokeAllRefreshTokensForUser(username);
 
         // 4️. Clear the refresh token cookie
-        ResponseCookie clearedCookie = ResponseCookie.from("refreshToken", "")
+        ResponseCookie clearedCookie = ResponseCookie.from(REFRESH_COOKIE_NAME, "")	// cookie name & cookie value
                 .httpOnly(true)
                 .secure(true)
-                .path("/api/auth")	         // Limit to auth endpoint
+                .path(COOKIE_PATH)	         // Limit to auth endpoint. If path is different cookie will not be removed
                 .maxAge(0)                   // Delete cookie
                 .sameSite("Strict")          // CSRF protection. (HttpOnly + Secure + SameSite: All refresh cookies are protected)
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, clearedCookie.toString());
-
+        									// ✅ If the path matches the existing cookie, it is removed from the browser/Postman.
+        									// ❌ If path differs, the cookie is not cleared, and you may see an old cookie remain.
+        
         // 5️. Return logout confirmation
-        ApiResponse<Void> apiResponse = new ApiResponse<>("Logged out successfully", now, null);
+        ApiResponse<Void> apiResponse = new ApiResponse<>("Logged out successfully", Instant.now(), null);
         return ResponseEntity.ok(apiResponse);        
         
         // Refer Note1: why 'SecurityContextHolder.clearContext()' is not needed in this scenario
@@ -290,4 +281,32 @@ public class AuthController {
 
 	5. Recommendation:
 	   - Optional: keep for clarity, but not required.
+*/
+
+/*  
+	Cookie Path
+	-----------
+	
+	A. Key Takeaways:
+		| Endpoint   | Cookie Behavior                                          |
+		| ---------- | -------------------------------------------------------- |
+		| `/signin`  | Replaces old cookie automatically                        |
+		| `/refresh` | Replaces old cookie automatically                        |
+		| `/logout`  | Clears cookie if path matches exactly                    |
+		| `/signup`  | Receives cookie in request headers but ignores it (safe) |
+	
+	
+	B. Common Mistakes That Cause “Old Cookie Not Cleared”:
+		1. Path mismatch:
+			- /signin sets cookie at /api/auth
+			- /logout clears cookie at /api/auth/refresh → old cookie remains.
+		2. Multiple cookies with same name but different paths:
+			- Browser/Postman shows both cookies; clearing one doesn’t affect the other.
+		3. Postman caching: 
+			- Postman may display old cookies even after a replacement — use the cookie manager to verify.
+	
+	C. Recommendation:
+		1. Use the same cookie path for all refresh token operations (/api/auth)
+		2. Keep the cookie name consistent (refreshToken)
+		3. Ensure /logout uses exact same path as used in /signin and /refresh.
 */

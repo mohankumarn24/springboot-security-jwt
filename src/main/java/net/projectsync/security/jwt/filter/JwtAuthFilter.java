@@ -14,6 +14,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
+import net.projectsync.security.jwt.exception.UnauthorizedException;
 import net.projectsync.security.jwt.model.Role;
 import net.projectsync.security.jwt.repository.UserRepository;
 import net.projectsync.security.jwt.service.JwtService;
@@ -54,8 +55,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
                     // 4b️. Validate role presence
                     if (roleName == null) {
-                        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Role not found in token");
-                        return;
+                    	// response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Role not found in token");  --> dont use this
+                    	throw new UnauthorizedException("Role not found in token");
                     }
 
                     // 4c️. Convert role string to Role enum
@@ -63,8 +64,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     try {
                         role = Role.valueOf(roleName);
                     } catch (IllegalArgumentException e) {
-                        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid role in token");
-                        return;
+                    	// // response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid role in token");  --> dont use this
+                    	throw new UnauthorizedException("Invalid role in token");
                     }
 
                     // 4d️. Set authentication in Spring Security context
@@ -91,13 +92,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             } 
             // 5️. Handle expired JWT
             catch (ExpiredJwtException e) {
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Access token expired");
-                return;
+            	// These will NOT reach the GlobalExceptionHandler because you are writing to the response manually inside the filter
+                // response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Access token expired");
+                throw new UnauthorizedException("Access token expired");
             } 
             // 6️. Handle invalid JWT
             catch (JwtException e) {
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
-                return;
+                // response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
+                throw new UnauthorizedException("Invalid token");
             }
         }
 
@@ -105,3 +107,41 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         chain.doFilter(request, response);
     }
 }
+
+/*
+
+	1. Why you no longer need response.sendError()?
+	 - Filters are early in the request chain, and normally you write directly to the response.
+	 - But throwing an exception instead allows centralized handling, ensures consistent JSON responses, and avoids duplicated code.
+
+
+	2. What happens on expired/invalid tokens?
+	ExpiredJwtException → throws UnauthorizedException("Access token expired").
+	JwtException → throws UnauthorizedException("Invalid token").
+	Both are caught by GlobalExceptionHandler → client receives a JSON response like:
+	
+	{
+	  "message": "Access token expired",
+	  "timestamp": "2025-10-10T15:00:00Z",
+	  "data": null
+	}
+
+*/
+
+
+/*
+	3. REMOVED in securityConfig:
+	// - Adding a AuthenticationEntryPoint helps return consistent JSON error responses for unauthorized requests
+	// - Handles unauthenticated requests (when a user accesses a protected endpoint without a token).
+	// - Returns JSON instead of the default HTML login page.
+	// - Gives a consistent API error response
+	.exceptionHandling(ex -> ex.authenticationEntryPoint((req, res, authEx) -> {
+	    res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+	    res.setContentType("application/json");
+	    res.getWriter().write("{\"error\":\"Unauthorized\"}");
+	}))
+
+
+	4. ADDED in securityConfig:
+	.exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
+*/
