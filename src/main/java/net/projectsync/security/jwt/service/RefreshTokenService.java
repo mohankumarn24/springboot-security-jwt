@@ -18,7 +18,7 @@ public class RefreshTokenService {
     private static final long REFRESH_TOKEN_TTL = 7 * 24 * 60 * 60;
 
     // Save a refresh token for a user 
-    public void saveToken(String token, String username) {
+    public void saveRefreshToken(String token, String username) {
         // 1. Save token -> username with TTL (token123 → sachin)
         redisTemplate.opsForValue().set(token, username, REFRESH_TOKEN_TTL, TimeUnit.SECONDS);
 
@@ -28,27 +28,23 @@ public class RefreshTokenService {
         redisTemplate.expire(key, REFRESH_TOKEN_TTL, TimeUnit.SECONDS);	// Apply TTL to a Redis key.
     }
 
-    // Check if a refresh token exists in Redis.
-    public boolean tokenExists(String token) {
-        return redisTemplate.hasKey(token);
-    }
-
-    // Revoke a single token.
-    public void revokeToken(String token) {
+    // Revoke a single token for the user (in user set username:sachin as well as token123 -> sachin) during token refresh
+    public void revokeSingleRefreshToken(String token) {
         String username = redisTemplate.opsForValue().get(token);
         if (username == null) return;
 
+        // remove token
+        redisTemplate.delete(token);					// remove token123 → sachin
+        
         // remove from set (remove token123 from set username:sachin → {token123, token456})
         String key = "username:" + username;
         redisTemplate.opsForSet().remove(key, token);	// result: username:sachin → {token456}
-        
-        // remove token
-        redisTemplate.delete(token);					// remove token123 → sachin
     }
 
-    // Revoke all refresh tokens for a user.
-    public void revokeTokensForUser(String username) {
+    // Revoke all refresh tokens for the user (in user set username:sachin as well as token123 -> sachin) during logout
+    public void revokeAllRefreshTokensForUser(String username) {
     	String key = "username:" + username;
+    	// 1. Fetch all tokens for the user 'sachin' from set
         // Optional<Set<String>> tokensOpt = Optional.ofNullable(redisTemplate.opsForSet().members(key));
     	Set<String> tokens = Optional.ofNullable(redisTemplate.opsForSet().members(key)).orElse(Collections.emptySet()); // username:sachin → {token123, token456}
 
@@ -59,9 +55,11 @@ public class RefreshTokenService {
             }
             */
         	// or Bulk delete tokens as below
-            redisTemplate.delete(tokens);	// deletes the individual token keys (token123, token456)
+        	// 2. Delete each token for user 'sachin'. Here we have only one token for username=sachin. So, deletes token123 → sachin
+            redisTemplate.delete(tokens);	// here we have only one token for username=sachin. So, deletes token123 → sachin
             
-            redisTemplate.delete(key);		// deletes the set itself (username:sachin)
+            // 3. Delete the individual token keys (token123, token456) for key 'username:sachin'. If set is empty, it deletes the parent set itself (username)
+            redisTemplate.delete(key);
         }
         /**
          * - If you just delete the set (username:sachin), the set itself is gone, but the individual token keys (token123, token456) still exist in Redis.
@@ -69,26 +67,21 @@ public class RefreshTokenService {
          */
     }
 
-    // Check if the user has any active tokens.
-    public boolean hasActiveTokens(String username) {
-    	String key = "username:" + username;
-        Set<String> tokens = Optional.ofNullable(redisTemplate.opsForSet().members(key)).orElse(Collections.emptySet());
-        return !tokens.isEmpty();
-    }
-
     // Get username for a given refresh token.
-    public Optional<String> getUsernameForToken(String refreshToken) {
+    public Optional<String> getUsernameForRefreshToken(String refreshToken) {
         String username = redisTemplate.opsForValue().get(refreshToken);
         return Optional.ofNullable(username);
     }
 
-    // Check if a refresh token is valid (exists in Redis).
-    public boolean isValidRefreshToken(String refreshToken) {
-        return tokenExists(refreshToken);
+    // Check if the user has any active tokens.
+    public boolean hasActiveRefreshTokens(String username) {
+    	String key = "username:" + username;
+        Set<String> tokens = Optional.ofNullable(redisTemplate.opsForSet().members(key)).orElse(Collections.emptySet());
+        return !tokens.isEmpty();
     }
     
-    // Check if a refresh token is valid.
-    public boolean isValid(String token) {
-        return redisTemplate.hasKey(token);
+    // Check if a refresh token is valid (exists in Redis).
+    public boolean isValidRefreshToken(String token) {
+    	return redisTemplate.hasKey(token);
     }
 }

@@ -79,7 +79,7 @@ public class JwtService {
             if (!"refresh".equals(tokenType)) return false;
 
             // b. Check Redis to prevent reuse
-            return refreshTokenService.isValid(token);
+            return refreshTokenService.isValidRefreshToken(token);
 
         } catch (JwtException | IllegalArgumentException e) {
             return false; // invalid, expired, or tampered

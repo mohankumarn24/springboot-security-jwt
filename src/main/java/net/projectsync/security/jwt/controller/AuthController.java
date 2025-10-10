@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 import lombok.RequiredArgsConstructor;
 import net.projectsync.security.jwt.dto.ApiResponse;
-import net.projectsync.security.jwt.dto.AuthRequest;
+import net.projectsync.security.jwt.dto.SignInRequest;
 import net.projectsync.security.jwt.dto.SignupRequest;
 import net.projectsync.security.jwt.dto.UserDTO;
 import net.projectsync.security.jwt.entity.User;
@@ -70,7 +70,7 @@ public class AuthController {
     }
 
     @PostMapping("/signin")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> signin(@RequestBody AuthRequest request, HttpServletResponse response) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> signin(@RequestBody SignInRequest request, HttpServletResponse response) {
 
         // 1️. Fetch user and verify credentials
         User user = userRepository.findByUsername(request.getUsername())
@@ -81,7 +81,7 @@ public class AuthController {
         }
 
         // 2️. Optional: prevent multiple logins per user
-        if (refreshTokenService.hasActiveTokens(user.getUsername())) {
+        if (refreshTokenService.hasActiveRefreshTokens(user.getUsername())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User already logged in");
         }
 
@@ -90,7 +90,7 @@ public class AuthController {
         String refreshToken = jwtService.generateRefreshToken(user.getUsername());
 
         // 4️. Store refresh token in Redis with TTL matching cookie
-        refreshTokenService.saveToken(refreshToken, user.getUsername());
+        refreshTokenService.saveRefreshToken(refreshToken, user.getUsername());
 
         // 5️. Set refresh token as HttpOnly, Secure, SameSite cookie
         ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
@@ -151,11 +151,11 @@ public class AuthController {
         }
 
         // 3️. Validate against Redis (or DB) to prevent reuse
-        String username = refreshTokenService.getUsernameForToken(oldRefreshToken)
+        String username = refreshTokenService.getUsernameForRefreshToken(oldRefreshToken)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Refresh token not recognized"));
 
-        // 4️. Revoke old refresh token
-        refreshTokenService.revokeToken(oldRefreshToken);
+        // 4️. Revoke old refresh token for the user (in user set username:sachin as well as token123 -> sachin)
+        refreshTokenService.revokeSingleRefreshToken(oldRefreshToken);
 
         // 5️. Generate new access token and refresh token
         User user = userRepository.findByUsername(username)
@@ -165,7 +165,7 @@ public class AuthController {
         String newRefreshToken = jwtService.generateRefreshToken(username);
 
         // 6️. Store new refresh token in Redis with expiry
-        refreshTokenService.saveToken(newRefreshToken, username);
+        refreshTokenService.saveRefreshToken(newRefreshToken, username);
 
         // 7️. Set new refresh token in HttpOnly, Secure, SameSite cookie
         ResponseCookie cookie = ResponseCookie.from("refreshToken", newRefreshToken)
@@ -203,13 +203,13 @@ public class AuthController {
         // 2️. Extract username from refresh token
         String username = jwtService.extractUsername(refreshToken);
 
-        if (username == null || !refreshTokenService.hasActiveTokens(username)) {
+        if (username == null || !refreshTokenService.hasActiveRefreshTokens(username)) {
             ApiResponse<Void> apiResponse = new ApiResponse<>("User already logged out", now, null);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiResponse);
         }
 
-        // 3️. Revoke all refresh tokens for the user
-        refreshTokenService.revokeTokensForUser(username);
+        // 3️. Revoke all refresh tokens for the user (in user set username:sachin as well as token123 -> sachin) during logout
+        refreshTokenService.revokeAllRefreshTokensForUser(username);
 
         // 4️. Clear the refresh token cookie
         ResponseCookie clearedCookie = ResponseCookie.from("refreshToken", "")

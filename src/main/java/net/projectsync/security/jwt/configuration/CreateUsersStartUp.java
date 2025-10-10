@@ -9,6 +9,7 @@ import net.projectsync.security.jwt.model.Role;
 import net.projectsync.security.jwt.repository.UserRepository;
 
 @Configuration
+//@Profile("dev") // Only runs in 'dev' profile
 public class CreateUsersStartUp {
 
 	@Bean

@@ -2,7 +2,7 @@ package net.projectsync.security.jwt.dto;
 
 import javax.validation.constraints.NotBlank;
 
-public class AuthRequest {
+public class SignInRequest {
 
     @NotBlank(message = "Username is required")
     private String username;
