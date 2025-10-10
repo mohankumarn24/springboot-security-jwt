@@ -37,7 +37,7 @@ public class AuthController {
     private final UserRepository userRepository;
     private final PasswordEncoder encoder;
 
-    private static final String COOKIE_PATH = "/api/auth"; // sends cookie to /api/auth/refresh and /api/auth/logout
+    private static final String COOKIE_PATH = "/api/auth"; // sends cookie to '/api/auth/signup', '/api/auth/signin', '/api/auth/refresh' and '/api/auth/logout'
     private static final long REFRESH_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 7; // 7 days
     
     @PostMapping("/signup")
@@ -97,7 +97,9 @@ public class AuthController {
                 .httpOnly(true)                             // JS cannot access (mitigates XSS i.e, Cross Site Scripting))
                 .secure(true)                               // Only sent over HTTPS
                 // .path("/api/auth/refresh")               // Limit cookie to refresh endpoint
-                .path(COOKIE_PATH)							// Defines which URL path the cookie applies to. Recommended: Limit path to 'refresh' endpoint only
+                .path("/api/auth")							// Cookie is sent automatically for '/api/auth/**' ==> ie. '/api/auth/signup', '/api/auth/signin', '/api/auth/refresh', '/api/auth/logout'
+                											// ✅ '/signup' and '/signin' technically receive the cookie, but they don’t use it, and that’s 100% safe and standard.
+                											// iff we have to restrict cookie only to '/refresh' and '/logout' then use path="/api/auth/refresh" and move logout endpoint under '/api/auth/refresh/logout'
                 .maxAge(REFRESH_COOKIE_MAX_AGE_SECONDS)     // Cookie lifetime in seconds. (REFRESH_COOKIE_MAX_AGE_MS = REFRESH_COOKIE_MAX_AGE_SECONDS * 1000)
                 .sameSite("Strict")                         // Restricts cross-site cookie sending. Provides CSRF protection. Adjust for cross-domain if needed
                 											// CSRF is already disabled in SecurityConfig. But refresh token is technically a stateful cookie
@@ -169,7 +171,7 @@ public class AuthController {
         ResponseCookie cookie = ResponseCookie.from("refreshToken", newRefreshToken)
                 .httpOnly(true)                             // JS cannot access (protects against XSS)
                 .secure(true)                               // HTTPS only
-                .path("/api/auth/refresh")                  // Limit cookie to refresh endpoint
+                .path("/api/auth")    		                // Limit cookie to auth endpoint
                 .maxAge(REFRESH_COOKIE_MAX_AGE_SECONDS)     // Lifetime in seconds
                 .sameSite("Strict")                         // Protect against CSRF (use 'Lax' or 'None' if cross-domain). (HttpOnly + Secure + SameSite: All refresh cookies are protected)
                 .build();
@@ -213,7 +215,7 @@ public class AuthController {
         ResponseCookie clearedCookie = ResponseCookie.from("refreshToken", "")
                 .httpOnly(true)
                 .secure(true)
-                .path("/api/auth/refresh")   // Limit to refresh endpoint
+                .path("/api/auth")	         // Limit to auth endpoint
                 .maxAge(0)                   // Delete cookie
                 .sameSite("Strict")          // CSRF protection. (HttpOnly + Secure + SameSite: All refresh cookies are protected)
                 .build();
@@ -264,15 +266,6 @@ public class AuthController {
 }
 
 
-/*
-Immediate Logout: The access token is deleted from Redis, so further requests fail immediately.
-Refresh Token Handling: Stored in DB via RefreshTokenService and revoked on refresh or logout.
-Redis TTL: Access tokens automatically expire in Redis according to JWT expiry.
-Simple Map Responses: Includes timestamp for debugging/logging.
-Exception Handling: Uses ResponseStatusException for 401 Unauthorized.
-*/
-
-
 /* NOTE1
 1. Purpose of SecurityContextHolder.clearContext():
 	   - Clears the SecurityContext for the current thread.
@@ -297,26 +290,4 @@ Exception Handling: Uses ResponseStatusException for 401 Unauthorized.
 
 	5. Recommendation:
 	   - Optional: keep for clarity, but not required.
-
-*/
-
-/*
-Same-Site Request: A request is same-site when the top-level domain (TLD + 1) of the current page matches the TLD + 1 of the requested resource.
-| Page                        | Request Target              | Same-Site?                       |
-| --------------------------- | --------------------------- | -------------------------------- |
-| https://**app.example.com** | https://**api.example.com** | ✅ Yes — both under `example.com` |
-| https://**example.com**     | https://**example.com**     | ✅ Yes                            |
-| http://**localhost:3000**   | http://**localhost:8080**   | ✅ Yes (same "site" `localhost`)  |
-
-Cross-Site Request: A request is cross-site when the site part of the domain differs.
-| Page                        | Request Target                   | Same-Site?   |
-| --------------------------- | -------------------------------- | ------------ |
-| https://**frontend.com**    | https://**api.frontend.com**     | ❌ Cross-site |
-| https://**app.example.com** | https://**auth.otherdomain.com** | ❌ Cross-site |
-| https://**app.example.com** | https://**example.org**          | ❌ Cross-site |
-
-
-SameSite=Strict → Only same-site requests
-SameSite=Lax    → Same-site + top-level navigation
-SameSite=None   → Always send (must use Secure). Ex: frontend on https://app.example.com and a backend API on https://api.example.com
 */
