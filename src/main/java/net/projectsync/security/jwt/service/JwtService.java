@@ -68,6 +68,7 @@ public class JwtService {
             return extractAllClaims(token).getSubject();
         } catch (JwtException | IllegalArgumentException e) {
             return null; // token invalid or expired
+            // TODO. When invalid short token is entered, excption is thrown but not handled by global exception handler
         }
     }
 

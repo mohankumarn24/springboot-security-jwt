@@ -1,6 +1,7 @@
 package net.projectsync.security.jwt.filter;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Collections;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -93,18 +94,51 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             // 5️. Handle expired JWT
             catch (ExpiredJwtException e) {
             	// These will NOT reach the GlobalExceptionHandler because you are writing to the response manually inside the filter
-                // response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Access token expired");
+                // response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Access token expired"); return;
+            	// sendUnauthorized(response, "Access token expired"); return;
                 throw new UnauthorizedException("Access token expired");
             } 
             // 6️. Handle invalid JWT
             catch (JwtException e) {
-                // response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
+                // response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token"); return;
                 throw new UnauthorizedException("Invalid token");
             }
         }
 
         // 7️. Continue filter chain
         chain.doFilter(request, response);
+    }
+    
+    /**
+     * when an access token is expired, the response is a structured JSON with an explicit code/message. 
+     * This makes it much easier for the frontend to detect an expired token and trigger a refresh.
+	 *
+     * Structured JSON 401 response
+     * {
+     *	 "error": "Access token expired",
+     *   "timestamp": "2025-10-03T12:34:56Z"
+	 * }
+	 * 
+	 * Frontend can now detect "Access token expired" and call /refresh automatically
+	 * 
+	 * Frontend Usage:
+     * try {
+     *     const data = await fetch("/api/user/tasks", { 
+     *         headers: { Authorization: `Bearer ${accessToken}` } 
+     *     });
+     *     if (data.error === "Access token expired") {
+     *         // call /refresh, update accessToken, retry
+     *     }
+     * } catch (err) {
+     *     console.error(err);
+     * }
+     */
+    private void sendUnauthorized(HttpServletResponse response, String message) throws IOException {
+    	
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+        String body = String.format("{\"error\":\"%s\",\"timestamp\":\"%s\"}", message, Instant.now());
+        response.getWriter().write(body);
     }
 }
 

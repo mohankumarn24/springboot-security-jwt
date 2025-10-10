@@ -2,14 +2,18 @@ package net.projectsync.security.jwt.exception;
 
 import java.nio.file.AccessDeniedException;
 import java.time.Instant;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-
 import net.projectsync.security.jwt.util.ApiResponse;
 
+// Global @ControllerAdvice handlers do NOT catch exceptions thrown in the Spring Security filter chain
+// Controller-level exception handling (@ControllerAdvice) only applies to exceptions thrown inside controller methods or during controller request mapping.
+// Spring Security filters (like your JwtAuthFilter) run before the request reaches the controller.
+// If an exception occurs in the filter chain (e.g., invalid JWT, missing token), it never enters the controller. Instead, Spring Security internally triggers either:
+// 	- AuthenticationEntryPoint → for 401 Unauthorized (unauthenticated access)
+//  - AccessDeniedHandler → for 403 Forbidden (authenticated but insufficient privileges)
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
