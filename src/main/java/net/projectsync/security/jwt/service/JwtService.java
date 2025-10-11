@@ -6,16 +6,21 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.SignatureException;
+import io.jsonwebtoken.UnsupportedJwtException;
 import lombok.RequiredArgsConstructor;
+import net.projectsync.security.jwt.exception.InvalidJwtTokenException;
 import net.projectsync.security.jwt.model.Role;
 
 @Service
 @RequiredArgsConstructor
 public class JwtService {
-
+    
     private final RefreshTokenService refreshTokenService;
 
     @Value("${jwt.secret}")
@@ -56,22 +61,38 @@ public class JwtService {
 
     // 4️. Extract all claims from JWT (validates signature & expiration)
     public Claims extractAllClaims(String token) {
-        return Jwts.parser()
-                .setSigningKey(secret)
-                .parseClaimsJws(token)
-                .getBody();
+        try {
+            return Jwts.parser()
+                    .setSigningKey(secret)
+                    .parseClaimsJws(token)
+                    .getBody();
+		} catch (ExpiredJwtException e) {
+			throw new InvalidJwtTokenException("Access token expired", e);
+		} catch (MalformedJwtException e) {
+			throw new InvalidJwtTokenException("Invalid token", e);
+		} catch (SignatureException e) {
+			throw new InvalidJwtTokenException("Invalid JWT signature", e);
+		} catch (UnsupportedJwtException e) {
+			throw new InvalidJwtTokenException("Unsupported JWT token", e);
+		} catch (IllegalArgumentException e) {
+			throw new InvalidJwtTokenException("JWT token is empty or null", e);
+		} catch (JwtException e) {
+			throw new InvalidJwtTokenException("Invalid token", e);
+		}
     }
-
+    
     // 5️. Extract username (subject) from JWT
     public String extractUsername(String token) {
-        try {
-            return extractAllClaims(token).getSubject();
-        } catch (JwtException | IllegalArgumentException e) {
-            return null; // token invalid or expired
-            // when malformed token is entered, exception is automatically handled by JwtAuthenticationEntryPoint
-        }
+    	// return extractAllClaims(token).getSubject();
+        return extractClaim(token, Claims::getSubject);
     }
 
+    // Extract a specific claim
+    public <T> T extractClaim(String token, java.util.function.Function<Claims, T> claimsResolver) {
+        final Claims claims = extractAllClaims(token);
+        return claimsResolver.apply(claims);
+    }
+    
     // 6️. Validate refresh token (type + Redis existence)
     public boolean isValidRefreshToken(String token) {
         try {
@@ -86,6 +107,15 @@ public class JwtService {
             return false; // invalid, expired, or tampered
         }
     }
-}
+    
+    // Validate token (optional utility)
+    public boolean isTokenValid(String token, String username) {
+        final String tokenUsername = extractUsername(token);
+        return (tokenUsername.equals(username) && !isTokenExpired(token));
+    }
 
+    private boolean isTokenExpired(String token) {
+        return extractClaim(token, Claims::getExpiration).before(new Date());
+    }
+}
 

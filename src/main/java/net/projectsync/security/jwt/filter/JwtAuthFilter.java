@@ -12,9 +12,11 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import net.projectsync.security.jwt.exception.InvalidJwtTokenException;
+import net.projectsync.security.jwt.exception.JwtAuthenticationEntryPoint;
 import net.projectsync.security.jwt.exception.UnauthorizedException;
 import net.projectsync.security.jwt.model.Role;
 import net.projectsync.security.jwt.repository.UserRepository;
@@ -22,17 +24,19 @@ import net.projectsync.security.jwt.service.JwtService;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final UserRepository userRepository;
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain chain) throws ServletException, IOException {
 
-        // 1️. Skip authentication for /api/auth endpoints (login, signup, refresh, logout)
+        // 1️. Skip authentication for '/api/auth/**' endpoints (signup, signin, refresh, logout)
         String path = request.getServletPath();
         if (path.startsWith("/api/auth/")) {
             chain.doFilter(request, response);
@@ -45,63 +49,75 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             String token = authHeader.substring(7); // remove "Bearer " prefix
 
             try {
-                // 3️. Extract username from JWT
-                String username = jwtService.extractUsername(token);
+                // 3️. Extract claims once
+                Claims claims = jwtService.extractAllClaims(token);
+                String username = claims.getSubject();
+                String tokenType = claims.get("type", String.class);
 
-                // 4️. If username exists and SecurityContext is not yet set
-                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-
-                    // 4a️. Extract role directly from JWT claims
-                    String roleName = jwtService.extractAllClaims(token).get("role", String.class);
-
-                    // 4b️. Validate role presence
+                if (username == null || tokenType == null) {
+                    throw new InvalidJwtTokenException("JWT missing required claims");
+                }
+                
+                // 4a. Only set SecurityContext for access tokens
+                if ("access".equals(tokenType)) {
+                	// Get role from claims
+                	String roleName = claims.get("role", String.class);
                     if (roleName == null) {
-                    	// response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Role not found in token");  --> dont use this
-                    	throw new UnauthorizedException("Role not found in token");
+                        throw new InvalidJwtTokenException("Access token missing role claim");
                     }
 
-                    // 4c️. Convert role string to Role enum
+                    // 4b. Validate role presence
                     Role role;
                     try {
                         role = Role.valueOf(roleName);
                     } catch (IllegalArgumentException e) {
-                    	// // response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid role in token");  --> dont use this
-                    	throw new UnauthorizedException("Invalid role in token");
+                        throw new InvalidJwtTokenException("Invalid role in access token", e);
                     }
 
-                    // 4d️. Set authentication in Spring Security context
-                    UsernamePasswordAuthenticationToken authToken =
-                            new UsernamePasswordAuthenticationToken(
-                                    username,
-                                    null,
-                                    Collections.singletonList(new SimpleGrantedAuthority(role.asSpringRole()))
-                            );
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
-                	
-                    /*
-                    User user = userRepository.findByUsername(username).orElse(null); // hits db, impacts performance. Refer Note1
-                    if (user != null) {
-                        String role = user.getRole().asSpringRole();	// we can get this from token itself, if we have added it in claims
+                    // 4c. If username exists and SecurityContext is not yet set
+                    if (SecurityContextHolder.getContext().getAuthentication() == null) {
                         UsernamePasswordAuthenticationToken authToken =
-                                new UsernamePasswordAuthenticationToken(username, 
-                                null,
-                                Collections.singletonList(new SimpleGrantedAuthority(role)));
+                                new UsernamePasswordAuthenticationToken(
+                                        username,
+                                        null,
+                                        Collections.singletonList(new SimpleGrantedAuthority(role.asSpringRole()))
+                                );
+                        // 4d. Set authentication in Spring Security context
                         SecurityContextHolder.getContext().setAuthentication(authToken);
                     }
-                    */                      
                 }
             } 
-            // 5️. Handle expired JWT
-            catch (ExpiredJwtException e) {
-            	// These will NOT reach the GlobalExceptionHandler because you are writing to the response manually inside the filter
+            // 5️. Handle JWT related exceptions
+            catch (UnauthorizedException e) {
+
+                // Optional: log the JWT error
+                log.warn("Unauthorized JWT access to {}: {}", request.getRequestURI(), e.getMessage());
+
+                // ✅ These will NOT reach the GlobalExceptionHandler because you are writing to the response manually inside the filter
+                //    Filters execute before controllers, so any exception thrown here must be handled manually or passed to an entry point.
+
+                // Handle exception 1
                 // response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Access token expired"); return;
-            	// sendUnauthorized(response, "Access token expired"); return;
-                throw new UnauthorizedException("Access token expired");
-            } 
-            // 6️. Handle invalid JWT
-            catch (JwtException e) {
-                // response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token"); return;
-                throw new UnauthorizedException("Invalid token");
+                // ❌ This works, but sends a plain HTTP 401 with no JSON body. Not recommended if you want uniform JSON responses.
+
+                // Handle exception 2
+                // sendUnauthorized(response, "Access token expired"); return;
+                // ✅ This works. You can manually write a JSON response. But it duplicates logic you already have in JwtAuthenticationEntryPoint.
+
+                // Handle exception 3
+                // throw new UnauthorizedException(e.getMessage());
+                // ❌ This works only if you have a GlobalExceptionHandler for ApiException.  
+                // ❌ But since you are inside a filter, this exception may not reach your handler reliably.
+
+                // Handle exception 4
+                // Delegate directly to the entry point
+                jwtAuthenticationEntryPoint.commence(
+                    request, 
+                    response, 
+                    new org.springframework.security.authentication.BadCredentialsException(e.getMessage(), e)
+                );
+                // ✅ Recommended approach. Uses your existing entry point to return uniform 401 JSON.
+                return; // stop filter chain
             }
         }
 
@@ -142,41 +158,3 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         response.getWriter().write(body);
     }
 }
-
-/*
-
-	1. Why you no longer need response.sendError()?
-	 - Filters are early in the request chain, and normally you write directly to the response.
-	 - But throwing an exception instead allows centralized handling, ensures consistent JSON responses, and avoids duplicated code.
-
-
-	2. What happens on expired/invalid tokens?
-	ExpiredJwtException → throws UnauthorizedException("Access token expired").
-	JwtException → throws UnauthorizedException("Invalid token").
-	Both are caught by GlobalExceptionHandler → client receives a JSON response like:
-	
-	{
-	  "message": "Access token expired",
-	  "timestamp": "2025-10-10T15:00:00Z",
-	  "data": null
-	}
-
-*/
-
-
-/*
-	3. REMOVED in securityConfig:
-	// - Adding a AuthenticationEntryPoint helps return consistent JSON error responses for unauthorized requests
-	// - Handles unauthenticated requests (when a user accesses a protected endpoint without a token).
-	// - Returns JSON instead of the default HTML login page.
-	// - Gives a consistent API error response
-	.exceptionHandling(ex -> ex.authenticationEntryPoint((req, res, authEx) -> {
-	    res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-	    res.setContentType("application/json");
-	    res.getWriter().write("{\"error\":\"Unauthorized\"}");
-	}))
-
-
-	4. ADDED in securityConfig:
-	.exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
-*/
