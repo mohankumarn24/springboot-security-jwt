@@ -16,9 +16,9 @@ import net.projectsync.security.jwt.util.ApiResponse;
 @RequiredArgsConstructor
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
-	// com.fasterxml.jackson.databind.exc.InvalidDefinitionException: Java 8 date/time type `java.time.Instant` not supported by default: add Module "com.fasterxml.jackson.datatype:jackson-datatype-jsr310" to enable handling (through reference chain: net.projectsync.security.jwt.util.ApiResponse["timestamp"])
     private final ObjectMapper objectMapper;
 
+    // Handles exception when you access protected endpoint (ex: /api/user/** or /api/admin/**) with empty Bearer token or a short malformed token (few random characters)
     @Override
     public void commence(HttpServletRequest request,
                          HttpServletResponse response,
@@ -28,7 +28,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
         ApiResponse<Void> apiResponse = new ApiResponse<>(
-            authException.getMessage(),
+            authException.getMessage() + " (exception handled by JwtAuthenticationEntryPoint)",
             Instant.now(),
             null
         );

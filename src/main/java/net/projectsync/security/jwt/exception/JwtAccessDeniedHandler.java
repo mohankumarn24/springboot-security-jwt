@@ -16,9 +16,9 @@ import net.projectsync.security.jwt.util.ApiResponse;
 @RequiredArgsConstructor
 public class JwtAccessDeniedHandler implements AccessDeniedHandler {
 
-	// com.fasterxml.jackson.databind.exc.InvalidDefinitionException: Java 8 date/time type `java.time.Instant` not supported by default: add Module "com.fasterxml.jackson.datatype:jackson-datatype-jsr310" to enable handling (through reference chain: net.projectsync.security.jwt.util.ApiResponse["timestamp"])
     private final ObjectMapper objectMapper;
 
+    // Displays message in responsebody when you dont have authorization to protected endpoint (ex: /api/user/** or /api/admin/**). Ex. Access '/api/admin/**' with 'USER' role
     @Override
     public void handle(HttpServletRequest request,
                        HttpServletResponse response,
@@ -28,7 +28,7 @@ public class JwtAccessDeniedHandler implements AccessDeniedHandler {
         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
 
         ApiResponse<Void> apiResponse = new ApiResponse<>(
-            "You are not authorized to access this resource",
+        		accessDeniedException.getMessage() +  " (handled by JwtAccessDeniedHandler)",
             Instant.now(),
             null
         );

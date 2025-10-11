@@ -15,6 +15,7 @@ public class ApiResponse<T> {
     // Serialize as ISO-8601 string
     // com.fasterxml.jackson.databind.exc.InvalidDefinitionException: Java 8 date/time type `java.time.Instant` not supported by default: add Module "com.fasterxml.jackson.datatype:jackson-datatype-jsr310" to enable handling (through reference chain: net.projectsync.security.jwt.util.ApiResponse["timestamp"])
     private final Instant timestamp;
+    // private final OffsetDateTime  timestamp; 
     
     private final T data; // optional payload
 
