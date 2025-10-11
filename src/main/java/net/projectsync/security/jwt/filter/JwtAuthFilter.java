@@ -133,6 +133,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
      *     console.error(err);
      * }
      */
+    // same as JwtAuthenticationEntryPoint
     private void sendUnauthorized(HttpServletResponse response, String message) throws IOException {
     	
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

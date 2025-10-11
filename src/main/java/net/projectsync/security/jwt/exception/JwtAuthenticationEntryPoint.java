@@ -1,6 +1,7 @@
 package net.projectsync.security.jwt.exception;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.time.Instant;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -8,12 +9,13 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import net.projectsync.security.jwt.util.ApiResponse;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     private final ObjectMapper objectMapper;
@@ -24,7 +26,11 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
                          HttpServletResponse response,
                          AuthenticationException authException) throws IOException {
 
+        // Optional logging
+        log.warn("Unauthorized access attempt to {}: {}", request.getRequestURI(), authException.getMessage());
+
         response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
         ApiResponse<Void> apiResponse = new ApiResponse<>(
@@ -33,6 +39,10 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
             null
         );
 
-        response.getWriter().write(objectMapper.writeValueAsString(apiResponse));
+        // response.getWriter().write(objectMapper.writeValueAsString(apiResponse));
+        try (PrintWriter writer = response.getWriter()) {
+            writer.write(objectMapper.writeValueAsString(apiResponse));
+            writer.flush();
+        }
     }
 }
