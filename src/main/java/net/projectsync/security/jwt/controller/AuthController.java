@@ -1,7 +1,7 @@
 package net.projectsync.security.jwt.controller;
 
 import java.time.Instant;
-import javax.servlet.http.HttpServletRequest;
+import java.util.UUID;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -11,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +44,8 @@ public class AuthController {
     private static final String REFRESH_COOKIE_NAME = "refreshToken";				// cookie name
     private static final String COOKIE_PATH = "/api/auth"; 							// sends cookie to '/api/auth/signup', '/api/auth/signin', '/api/auth/refresh' and '/api/auth/logout'
     private static final long REFRESH_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 7; 	// 7 days
+    
+    private static final String CSRF_COOKIE_NAME = "XSRF-TOKEN";
     
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse<UserDTO>> signup(@RequestBody SignupRequest request) {
@@ -112,15 +115,29 @@ public class AuthController {
         													// If a cookie named "refreshToken" already exists with the same path and domain, the browser/Postman automatically replaces it.
         													// Old cookie is deleted and replaced; you do not need manual deletion.
 
-        // 6. Return access token in JSON. SPA should store in memory only (not localStorage or sessionStorage) to minimize XSS risk
+        // 6. Generate CSRF token (random) and set CSRF cookie (non-HttpOnly, readable by JS)
+        String csrfToken = UUID.randomUUID().toString();
+        ResponseCookie csrfCookie = ResponseCookie.from(CSRF_COOKIE_NAME, csrfToken)
+                .httpOnly(false)
+                .secure(true)
+                .sameSite("None")
+                .path("/")
+                .maxAge(REFRESH_COOKIE_MAX_AGE_SECONDS)
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, csrfCookie.toString());
+        
+        // 7. Return access token in JSON. SPA should store in memory only (not localStorage or sessionStorage) to minimize XSS risk
         TokenResponse tokenResponse = new TokenResponse(accessToken, UserMapper.toDTO(user));
         ApiResponse<TokenResponse> apiResponse = new ApiResponse<>("Signed in successfully", Instant.now(), tokenResponse);
         return ResponseEntity.ok(apiResponse);
     }
 
-
     @PostMapping("/refresh")
-    public ResponseEntity<ApiResponse<TokenResponse>> refresh(@CookieValue(name = REFRESH_COOKIE_NAME, required = false) String oldRefreshToken, HttpServletResponse response) {
+    public ResponseEntity<ApiResponse<TokenResponse>> refresh(
+										    		@CookieValue(name = REFRESH_COOKIE_NAME, required = false) String oldRefreshToken,
+										    		@CookieValue(name = CSRF_COOKIE_NAME, required = false) String csrfCookieValue,
+										    		@RequestHeader(value = "X-XSRF-TOKEN", required = false) String csrfHeaderValue,
+										    		HttpServletResponse response) {
 
     	/*
         // Read refresh token from cookie
@@ -141,29 +158,34 @@ public class AuthController {
             throw new UnauthorizedException("Refresh token missing");
         }
 
-        // 2️. Validate refresh token signature and expiration
+        // 2. CSRF double-submit validation
+        if (csrfCookieValue == null || csrfHeaderValue == null || !csrfCookieValue.equals(csrfHeaderValue)) {
+            throw new ForbiddenException("CSRF token mismatch");
+        }
+        
+        // 3. Validate and rotate refresh token
         if (!jwtService.isValidRefreshToken(oldRefreshToken)) {
             throw new UnauthorizedException("Invalid or expired refresh token");
         }
 
-        // 3️. Validate against Redis (or DB) to prevent reuse
+        // 4️. Validate against Redis (or DB) to prevent reuse
         String username = refreshTokenService.getUsernameForRefreshToken(oldRefreshToken)
-                .orElseThrow(() -> new UnauthorizedException("Refresh token not recognized"));
+                .orElseThrow(() -> new UnauthorizedException("Unrecognized refresh token"));
 
-        // 4️. Revoke old refresh token for the user (in user set username:sachin as well as token123 -> sachin)
+        // 5. Revoke old refresh token for the user (in user set username:sachin as well as token123 -> sachin)
         refreshTokenService.revokeSingleRefreshToken(oldRefreshToken);
 
-        // 5️. Generate new access token and refresh token
+        // 6. Generate new access token and refresh token
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UnauthorizedException("User not found"));
 
         String newAccessToken = jwtService.generateAccessToken(username, user.getRole());
         String newRefreshToken = jwtService.generateRefreshToken(username);
 
-        // 6️. Store new refresh token in Redis with expiry
+        // 7. Store new refresh token in Redis with expiry
         refreshTokenService.saveRefreshToken(newRefreshToken, username);
 
-        // 7️. Set new refresh token in HttpOnly, Secure, SameSite cookie
+        // 8️. Set new refresh token in HttpOnly, Secure, SameSite cookie
         ResponseCookie cookie = ResponseCookie.from(REFRESH_COOKIE_NAME, newRefreshToken)	// cookie name & cookie value
                 .httpOnly(true)                             // JS cannot access (protects against XSS)
                 .secure(true)                               // HTTPS only
@@ -178,29 +200,37 @@ public class AuthController {
 
         // 8️. Return new access token (SPA stores it in memory only)
         TokenResponse tokenResponse = new TokenResponse(newAccessToken, UserMapper.toDTO(user));
-        ApiResponse<TokenResponse> apiResponse = new ApiResponse<>("Access token and Refresh token refreshed successfully", Instant.now(), tokenResponse);
+        ApiResponse<TokenResponse> apiResponse = new ApiResponse<>("Tokens refreshed successfully", Instant.now(), tokenResponse);
         return ResponseEntity.ok(apiResponse);
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponse<Void>> logout(@CookieValue(name=REFRESH_COOKIE_NAME, required = false) String refreshToken, 
-													             HttpServletResponse response) {
+    public ResponseEntity<ApiResponse<Void>> logout(
+            							@CookieValue(name = REFRESH_COOKIE_NAME, required = false) String refreshToken,
+            							@CookieValue(name = CSRF_COOKIE_NAME, required = false) String csrfCookieValue,
+            							@RequestHeader(value = "X-XSRF-TOKEN", required = false) String csrfHeaderValue,
+            							HttpServletResponse response) {
 
         // 1️. If no refresh token, user is effectively already logged out
         if (refreshToken == null || refreshToken.isBlank()) {
-            throw new BadRequestException("User already logged out");
+            throw new BadRequestException("User already logged out or no refresh token provided");
         }
 
-        // 2️. Extract username from refresh token
+        // 2️. Double Submit CSRF protection
+        if (csrfCookieValue == null || csrfHeaderValue == null || !csrfCookieValue.equals(csrfHeaderValue)) {
+            throw new ForbiddenException("CSRF token mismatch");
+        }
+        
+        // 3. Validate refresh token and user
         String username = jwtService.extractUsername(refreshToken);
         if (username == null || !refreshTokenService.hasActiveRefreshTokens(username)) {
             throw new BadRequestException("User already logged out");
         }
 
-        // 3️. Revoke all refresh tokens for the user (in user set username:sachin as well as token123 -> sachin) during logout
+        // 4️. Revoke all refresh tokens for the user (in user set username:sachin as well as token123 -> sachin) during logout
         refreshTokenService.revokeAllRefreshTokensForUser(username);
 
-        // 4️. Clear the refresh token cookie
+        // 5️. Clear the 'refreshToken' cookie
         ResponseCookie clearedCookie = ResponseCookie.from(REFRESH_COOKIE_NAME, "")	// cookie name & cookie value
                 .httpOnly(true)
                 .secure(true)
@@ -212,7 +242,17 @@ public class AuthController {
         									// ✅ If the path matches the existing cookie, it is removed from the browser/Postman.
         									// ❌ If path differs, the cookie is not cleared, and you may see an old cookie remain.
         
-        // 5️. Return logout confirmation
+        // 6️. Clear the 'XSRF-TOKEN' cookie
+        ResponseCookie clearCsrf = ResponseCookie.from(CSRF_COOKIE_NAME, "")
+                .httpOnly(false)
+                .secure(true)
+                .path("/")
+                .sameSite("None")
+                .maxAge(0)
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, clearCsrf.toString());
+        
+        // 7. Return logout confirmation
         ApiResponse<Void> apiResponse = new ApiResponse<>("Logged out successfully", Instant.now(), null);
         return ResponseEntity.ok(apiResponse);        
         
