@@ -1,8 +1,8 @@
 package net.projectsync.security.jwt.configuration;
 
-import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -11,7 +11,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
 import lombok.RequiredArgsConstructor;
 import net.projectsync.security.jwt.exception.JwtAccessDeniedHandler;
 import net.projectsync.security.jwt.exception.JwtAuthenticationEntryPoint;
@@ -36,19 +35,15 @@ public class SecurityConfig {
     		// 		-- This is technically a stateful cookie, so if you were worried about CSRF here, you might want CSRF just for that endpoint.
     		// 		-- Using SameSite=Strict already mitigates most CSRF attacks because browsers won’t send the cookie in cross-site requests
 	        .csrf(csrf -> csrf.disable())	// need to enable if .sameSite("None") 
-	        // - If your frontend SPA is on a different domain/port, you should configure CORS here
+	        
+	        // - If your frontend SPA is on a different domain/port, you should configure CORS here or use CorsConfig.java (use any one approach)
 	        // - Allows your frontend app (running at http://localhost:3000) to make requests to this backend.
 	        // - You specify allowed methods, headers, and whether credentials (cookies, auth headers) are allowed
-	        .cors(cors -> cors.configurationSource(request -> {
-	            CorsConfiguration config = new CorsConfiguration();
-	            config.setAllowedOrigins(List.of("http://localhost:3000"));						
-	            config.setAllowedMethods(List.of("GET","POST","PUT","DELETE"));
-	            config.setAllowCredentials(true);
-	            config.setAllowedHeaders(List.of("*"));
-	            return config;
-	        }))
+	        .cors(Customizer.withDefaults())	// just enables CORS, Spring Security will automatically look for a CorsConfigurationSource bean which is added in 'CorsConfig.java'
+	        
 	        // The server will not create or use HTTP sessions. Every request must include the JWT token. This is standard for JWT-based authentication.
 	        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+	        
 	        // - Adding a AuthenticationEntryPoint helps return consistent JSON error responses for unauthorized requests
 	        // - Handles unauthenticated requests (when a user accesses a protected endpoint without a token).
 	        // - Returns JSON instead of the default HTML login page.
@@ -69,12 +64,13 @@ public class SecurityConfig {
 	        																// See: JWT Handling Checklist
 	        .authorizeHttpRequests(auth -> auth
 	            .antMatchers("/api/auth/**", "/actuator/**", "/management/**").permitAll()			
-	            													// public endpoints (login/register, etc.). No authentication is required to access these endpoints
-	            .antMatchers("/api/admin/**").hasRole("ADMIN")		// only accessible by users with role ADMIN. JWT authentication needed
-	            .antMatchers("/api/user/**").hasRole("USER")		// only accessible by users with role USER. JWT authentication needed
-	            .anyRequest().authenticated()						// Any other endpoint → must be authenticated (using JWT)
-	            													// all endpoints including (/api/admin/**, /api/user/**) but not public endpints
+	            															// public endpoints (login/register, etc.). No authentication is required to access these endpoints
+	            .antMatchers("/api/admin/**").hasRole("ADMIN")				// only accessible by users with role ADMIN. JWT authentication needed
+	            .antMatchers("/api/user/**").hasRole("USER")				// only accessible by users with role USER. JWT authentication needed
+	            .anyRequest().authenticated()								// Any other endpoint → must be authenticated (using JWT)
+	            															// all endpoints including (/api/admin/**, /api/user/**) but not public endpints
 	        )
+	        
 	        .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);    	
         return http.build();
     }
