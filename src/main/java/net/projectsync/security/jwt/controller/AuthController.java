@@ -88,7 +88,7 @@ public class AuthController {
 				authCookies.getCsrfToken(), csrfHeaderValue);
 	}
 	
-	// Added files - RecentLoginRequired custom annotation, RecentLoginAspect aspect
+	// Added files - RecentLoginRequired custom annotation, RecentLoginAspect aspect, ChangePasswordRequest DTO, RecentLoginRequiredException, UserNotActiveException, UserNotFoundException
 	@PostMapping("/change-password")
 	@RecentLoginRequired(maxAgeSeconds = 300)  // optional: require recent login
 	public ResponseEntity<ApiResponse<Void>> changePassword(
