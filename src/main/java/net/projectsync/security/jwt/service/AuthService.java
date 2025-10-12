@@ -367,8 +367,37 @@ public class AuthService {
         httpServletResponse.addHeader(HttpHeaders.SET_COOKIE, clearCsrfCookie.toString());
         
         // 89. Return success response
-        ApiResponse<Void> apiResponse = new ApiResponse<>("Password changed successfully", Instant.now(), null);
-        return ResponseEntity.ok(apiResponse);
+        ApiResponse<Void> apiResponse = new ApiResponse<>("Password changed successfully. Please sign in again.", Instant.now(), null);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.LOCATION, "/api/auth/signin") // redirect hint for frontend
+                .body(apiResponse);
+        
+        /**
+         * 
+         * After password change, user must be redirected to '/signin' page:
+         * 
+         * 1. Return 200 + redirect URL:
+         * 	ApiResponse<Void> apiResponse = new ApiResponse<>(
+         * 		"Password changed successfully. Please sign in again.",
+         * 		Instant.now(),
+         * 		null
+         * 	);
+         * 
+         * 	return ResponseEntity
+         * 			.ok()
+         * 			.header(HttpHeaders.LOCATION, "/api/auth/signin") // optional: hint for frontend
+         * 			.body(apiResponse);
+         * 
+         * 2. Return HTTP 303 SEE_OTHER (This is a real HTTP redirect — the browser navigates automatically.):
+         * 	return ResponseEntity.status(HttpStatus.SEE_OTHER)
+         * 			.header(HttpHeaders.LOCATION, "/signin")
+         * 			.build();
+         * 
+         * 3. Frontend:
+         * 	if (response.status === 200) {
+         * 	  window.location.href = response.headers.location || '/signin';
+         * 	}
+       */        
     }
 }
 

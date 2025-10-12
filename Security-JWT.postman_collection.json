@@ -916,7 +916,7 @@
 				"header": [
 					{
 						"key": "X-XSRF-TOKEN",
-						"value": "77604225-910a-4f0b-9c08-f72ecc93c9f9",
+						"value": "38be0230-c34a-4636-b6f6-46680fe89ad0",
 						"type": "text"
 					}
 				],
@@ -1261,7 +1261,53 @@
 			]
 		},
 		{
-			"name": "7a - Actuator (Health)",
+			"name": "7 - Change Password",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYWNoaW4iLCJyb2xlIjoiVVNFUiIsInR5cGUiOiJhY2Nlc3MiLCJleHAiOjE3NjAyOTg0OTMsImlhdCI6MTc2MDI5NzU5M30.xeU-NWcyzlcY6kkpYil1mumNrSRip96_k8CuNG6E_HqarX2azhkFaJ_vyBlIvCWRyuTx74gl--kzI3lufDWLKg",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-XSRF-TOKEN",
+						"value": "2db7fc51-48eb-44d3-a64a-929f93a911fc",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"currentPassword\": \"India@124\",\r\n  \"newPassword\": \"India@123\",\r\n  \"confirmPassword\": \"India@123\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:8443/api/auth/change-password",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "8443",
+					"path": [
+						"api",
+						"auth",
+						"change-password"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "8a - Actuator (Health)",
 			"protocolProfileBehavior": {
 				"disableBodyPruning": true
 			},
@@ -1310,7 +1356,243 @@
 					},
 					"status": "OK",
 					"code": 200,
-					"_postman_previewlanguage": "",
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "Vary",
+							"value": "Origin"
+						},
+						{
+							"key": "Vary",
+							"value": "Access-Control-Request-Method"
+						},
+						{
+							"key": "Vary",
+							"value": "Access-Control-Request-Headers"
+						},
+						{
+							"key": "X-Content-Type-Options",
+							"value": "nosniff"
+						},
+						{
+							"key": "X-XSS-Protection",
+							"value": "1; mode=block"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "no-cache, no-store, max-age=0, must-revalidate"
+						},
+						{
+							"key": "Pragma",
+							"value": "no-cache"
+						},
+						{
+							"key": "Expires",
+							"value": "0"
+						},
+						{
+							"key": "Strict-Transport-Security",
+							"value": "max-age=31536000 ; includeSubDomains"
+						},
+						{
+							"key": "X-Frame-Options",
+							"value": "DENY"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/vnd.spring-boot.actuator.v3+json"
+						},
+						{
+							"key": "Transfer-Encoding",
+							"value": "chunked"
+						},
+						{
+							"key": "Date",
+							"value": "Sun, 12 Oct 2025 11:00:39 GMT"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=60"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"status\": \"UP\",\n    \"components\": {\n        \"db\": {\n            \"status\": \"UP\",\n            \"details\": {\n                \"database\": \"PostgreSQL\",\n                \"validationQuery\": \"isValid()\"\n            }\n        },\n        \"diskSpace\": {\n            \"status\": \"UP\",\n            \"details\": {\n                \"total\": 219554357248,\n                \"free\": 80964771840,\n                \"threshold\": 10485760,\n                \"exists\": true\n            }\n        },\n        \"ping\": {\n            \"status\": \"UP\"\n        },\n        \"redis\": {\n            \"status\": \"UP\",\n            \"details\": {\n                \"Redis\": \"Available\"\n            }\n        }\n    }\n}"
+				}
+			]
+		},
+		{
+			"name": "8b - Actuator (custom endpoint)",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"username\": \"sachin\",\r\n  \"password\": \"India@123\"\r\n}"
+				},
+				"url": {
+					"raw": "https://localhost:8443/management/custom-info",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "8443",
+					"path": [
+						"management",
+						"custom-info"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "7 - Actuator (Redis Health)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"username\": \"sachin\",\r\n  \"password\": \"India@123\"\r\n}"
+						},
+						"url": {
+							"raw": "https://localhost:8443/actuator/health",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "8443",
+							"path": [
+								"actuator",
+								"health"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "Vary",
+							"value": "Origin"
+						},
+						{
+							"key": "Vary",
+							"value": "Access-Control-Request-Method"
+						},
+						{
+							"key": "Vary",
+							"value": "Access-Control-Request-Headers"
+						},
+						{
+							"key": "X-Content-Type-Options",
+							"value": "nosniff"
+						},
+						{
+							"key": "X-XSS-Protection",
+							"value": "1; mode=block"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "no-cache, no-store, max-age=0, must-revalidate"
+						},
+						{
+							"key": "Pragma",
+							"value": "no-cache"
+						},
+						{
+							"key": "Expires",
+							"value": "0"
+						},
+						{
+							"key": "Strict-Transport-Security",
+							"value": "max-age=31536000 ; includeSubDomains"
+						},
+						{
+							"key": "X-Frame-Options",
+							"value": "DENY"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/vnd.spring-boot.actuator.v3+json"
+						},
+						{
+							"key": "Transfer-Encoding",
+							"value": "chunked"
+						},
+						{
+							"key": "Date",
+							"value": "Sun, 12 Oct 2025 11:00:39 GMT"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=60"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"status\": \"UP\",\n    \"components\": {\n        \"db\": {\n            \"status\": \"UP\",\n            \"details\": {\n                \"database\": \"PostgreSQL\",\n                \"validationQuery\": \"isValid()\"\n            }\n        },\n        \"diskSpace\": {\n            \"status\": \"UP\",\n            \"details\": {\n                \"total\": 219554357248,\n                \"free\": 80964771840,\n                \"threshold\": 10485760,\n                \"exists\": true\n            }\n        },\n        \"ping\": {\n            \"status\": \"UP\"\n        },\n        \"redis\": {\n            \"status\": \"UP\",\n            \"details\": {\n                \"Redis\": \"Available\"\n            }\n        }\n    }\n}"
+				}
+			]
+		},
+		{
+			"name": "8c - Actuator (test all other endpoints - health, info, env, beans, etc)",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"username\": \"sachin\",\r\n  \"password\": \"India@123\"\r\n}"
+				},
+				"url": {
+					"raw": "https://localhost:8443/management/info",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "8443",
+					"path": [
+						"management",
+						"info"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "7 - Actuator (Redis Health)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"username\": \"sachin\",\r\n  \"password\": \"India@123\"\r\n}"
+						},
+						"url": {
+							"raw": "https://localhost:8443/actuator/health",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "8443",
+							"path": [
+								"actuator",
+								"health"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": null,
 					"header": [
 						{
 							"key": "Vary",
