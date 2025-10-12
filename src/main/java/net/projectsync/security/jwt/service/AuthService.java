@@ -40,8 +40,8 @@ public class AuthService {
 	// added to verify if properties are loaded correctly
 	@PostConstruct
 	public void checkCookies() {
-	    System.out.println("Refresh Cookie: " + cookieProperties.getRefresh().getName());
-	    System.out.println("CSRF Cookie: " + cookieProperties.getCsrf().getName());
+	    System.out.println("[AuthService] Refresh Cookie: " + cookieProperties.getRefresh().getName());
+	    System.out.println("[AuthService] CSRF Cookie: " + cookieProperties.getCsrf().getName());
 	}
 
 	public ResponseEntity<ApiResponse<UserDTO>> signup(
