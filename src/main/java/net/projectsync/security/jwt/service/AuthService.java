@@ -5,6 +5,9 @@ import java.util.UUID;
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.transaction.Transactional;
+import javax.validation.Valid;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -13,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import net.projectsync.security.jwt.configuration.CookieProperties;
+import net.projectsync.security.jwt.dto.ChangePasswordRequest;
 import net.projectsync.security.jwt.dto.SignInRequest;
 import net.projectsync.security.jwt.dto.SignupRequest;
 import net.projectsync.security.jwt.dto.TokenResponse;
@@ -22,6 +26,8 @@ import net.projectsync.security.jwt.exception.BadRequestException;
 import net.projectsync.security.jwt.exception.ConflictException;
 import net.projectsync.security.jwt.exception.ForbiddenException;
 import net.projectsync.security.jwt.exception.UnauthorizedException;
+import net.projectsync.security.jwt.exception.UserNotActiveException;
+import net.projectsync.security.jwt.exception.UserNotFoundException;
 import net.projectsync.security.jwt.mapper.UserMapper;
 import net.projectsync.security.jwt.model.Role;
 import net.projectsync.security.jwt.repository.UserRepository;
@@ -171,7 +177,7 @@ public class AuthService {
         refreshTokenService.revokeSingleRefreshToken(oldRefreshToken);
 
         // 6. Generate new access token and refresh token
-        User user = userRepository.findByUsername(username).orElseThrow(() -> new UnauthorizedException("User not found"));
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found"));
         String newAccessToken = jwtService.generateAccessToken(username, user.getRole());
         String newRefreshToken = jwtService.generateRefreshToken(username);
 
@@ -218,7 +224,7 @@ public class AuthService {
         // 3. Validate refresh token and user
         String username = jwtService.extractUsername(refreshToken);
         if (username == null || !refreshTokenService.hasActiveRefreshTokens(username)) {
-            throw new BadRequestException("User already logged out");
+            throw new UserNotActiveException("User already logged out");
         }
 
         // 4️. Revoke all refresh tokens for the user (in user set username:sachin as well as token123 -> sachin) during logout
@@ -242,8 +248,8 @@ public class AuthService {
         ResponseCookie clearCsrfCookie = ResponseCookie.from(cookieProperties.getCsrf().getName(), "")
                 .httpOnly(false)
                 .secure(true)
-                .path(cookieProperties.getCsrf().getPath())
                 .sameSite("None")
+                .path(cookieProperties.getCsrf().getPath())
                 .maxAge(0)
                 .build();
         httpServletResponse.addHeader(HttpHeaders.SET_COOKIE, clearCsrfCookie.toString());
@@ -290,6 +296,80 @@ public class AuthService {
                 .body(Map.of("message", "No token provided", "timestamp", Instant.now()));
         */
 	}
+
+    @Transactional
+    public ResponseEntity<ApiResponse<Void>> changePassword(
+									            HttpServletRequest httpServletRequest,
+									            HttpServletResponse httpServletResponse,
+									            String csrfCookieValue,
+									            String csrfHeaderValue,
+									            String refreshToken,
+									            ChangePasswordRequest changePasswordRequest) {
+
+    	// 1a. user already changed password
+    	if (csrfCookieValue == null && refreshToken == null) {
+    		throw new UserNotActiveException("User not active. Please login again");
+    	}
+    	
+        // 1️b.. Double-Submit CSRF Protection
+        if (csrfCookieValue == null || csrfHeaderValue == null || !csrfCookieValue.equals(csrfHeaderValue)) {
+            throw new ForbiddenException("CSRF token mismatch");
+        }
+
+        // 2️. Extract username from JWT
+        String username = jwtService.extractUsernameFromAuthHeader(httpServletRequest);
+        if (username == null || !refreshTokenService.hasActiveRefreshTokens(username)) {
+            throw new UserNotActiveException("User not active. Please login again");	// prevents changing password if user is effectively logged out
+        }
+        
+        // 3️. Load user from database
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        // 4️. Verify current password
+        if (!encoder.matches(changePasswordRequest.getCurrentPassword(), user.getPassword())) {
+            throw new UnauthorizedException("Current password is incorrect");
+        }
+
+        // 5️. Verify newPassword matches confirmPassword
+        if (!changePasswordRequest.getNewPassword().equals(changePasswordRequest.getConfirmPassword())) {
+            throw new BadRequestException("New password and confirm password do not match");
+        }
+
+        // 6️. Encode new password and save user
+        user.setPassword(encoder.encode(changePasswordRequest.getNewPassword()));
+        userRepository.save(user);
+
+        // 7️. Optional: revoke all refresh tokens after password change
+        refreshTokenService.revokeAllRefreshTokensForUser(username);
+
+        // 8a. Clear the 'refreshToken' cookie
+        // ResponseCookie clearRefreshCookie = CookieUtils.clearCookie(cookieProperties.getRefresh(), true, true, "Strict");
+        ResponseCookie clearRefreshCookie = ResponseCookie.from(cookieProperties.getRefresh().getName(), "")	// cookie name & cookie value
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("Strict")          					// CSRF protection. (HttpOnly + Secure + SameSite: All refresh cookies are protected)
+                .path(cookieProperties.getRefresh().getPath())	// Limit to auth endpoint. If path is different cookie will not be removed
+                .maxAge(0)                   					// Delete cookie
+                .build();
+        httpServletResponse.addHeader(HttpHeaders.SET_COOKIE, clearRefreshCookie.toString());
+        														// ✅ If the path matches the existing cookie, it is removed from the browser/Postman.
+        														// ❌ If path differs, the cookie is not cleared, and you may see an old cookie remain.
+        
+        // 8b. Clear the 'XSRF-TOKEN' cookie
+        // ResponseCookie clearCsrfCookie = CookieUtils.clearCookie(cookieProperties.getCsrf(), false, true, "None");
+        ResponseCookie clearCsrfCookie = ResponseCookie.from(cookieProperties.getCsrf().getName(), "")
+                .httpOnly(false)
+                .secure(true)
+                .sameSite("None")
+                .path(cookieProperties.getCsrf().getPath())
+                .maxAge(0)
+                .build();
+        httpServletResponse.addHeader(HttpHeaders.SET_COOKIE, clearCsrfCookie.toString());
+        
+        // 89. Return success response
+        ApiResponse<Void> apiResponse = new ApiResponse<>("Password changed successfully", Instant.now(), null);
+        return ResponseEntity.ok(apiResponse);
+    }
 }
 
 

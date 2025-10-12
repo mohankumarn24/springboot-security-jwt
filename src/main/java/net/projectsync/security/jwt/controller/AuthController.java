@@ -1,5 +1,7 @@
 package net.projectsync.security.jwt.controller;
 
+import java.time.Instant;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -15,12 +17,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
+import net.projectsync.security.jwt.annotation.RecentLoginRequired;
 import net.projectsync.security.jwt.configuration.CookieProperties;
+import net.projectsync.security.jwt.dto.ChangePasswordRequest;
 import net.projectsync.security.jwt.dto.SignInRequest;
 import net.projectsync.security.jwt.dto.SignupRequest;
 import net.projectsync.security.jwt.dto.TokenResponse;
 import net.projectsync.security.jwt.dto.UserDTO;
+import net.projectsync.security.jwt.exception.BadRequestException;
 import net.projectsync.security.jwt.service.AuthService;
+import net.projectsync.security.jwt.service.JwtService;
 import net.projectsync.security.jwt.util.ApiResponse;
 import net.projectsync.security.jwt.util.CookieUtils;
 import net.projectsync.security.jwt.util.CookieUtils.AuthCookies;
@@ -33,6 +39,7 @@ public class AuthController {
 
 	private final AuthService authService;
 	private final CookieProperties cookieProperties;
+	private final JwtService jwtService;
 
 	@PostMapping("/signup")
 	public ResponseEntity<ApiResponse<UserDTO>> signup(
@@ -79,5 +86,19 @@ public class AuthController {
 		AuthCookies authCookies = CookieUtils.getAuthCookiesLogout(httpServletRequest, cookieProperties);
 		return authService.logout(httpServletRequest, httpServletResponse, authCookies.getRefreshToken(),
 				authCookies.getCsrfToken(), csrfHeaderValue);
+	}
+	
+	// Added files - RecentLoginRequired custom annotation, RecentLoginAspect aspect
+	@PostMapping("/change-password")
+	@RecentLoginRequired(maxAgeSeconds = 300)  // optional: require recent login
+	public ResponseEntity<ApiResponse<Void>> changePassword(
+													HttpServletRequest httpServletRequest,
+													HttpServletResponse httpServletResponse,
+											        @RequestBody @Valid ChangePasswordRequest changePasswordRequest,
+											        @RequestHeader(value = "X-XSRF-TOKEN", required = false) String csrfHeaderValue) {
+		
+	    // Extract CSRF cookie
+		AuthCookies authCookies = CookieUtils.getAuthCookiesLogout(httpServletRequest, cookieProperties);
+	    return authService.changePassword(httpServletRequest, httpServletResponse, authCookies.getCsrfToken(), csrfHeaderValue, authCookies.getRefreshToken(), changePasswordRequest);
 	}
 }

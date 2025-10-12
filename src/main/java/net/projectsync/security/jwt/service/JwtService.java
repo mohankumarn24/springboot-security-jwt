@@ -3,6 +3,9 @@ package net.projectsync.security.jwt.service;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import io.jsonwebtoken.Claims;
@@ -14,6 +17,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.UnsupportedJwtException;
 import lombok.RequiredArgsConstructor;
+import net.projectsync.security.jwt.exception.BadRequestException;
 import net.projectsync.security.jwt.exception.InvalidJwtTokenException;
 import net.projectsync.security.jwt.model.Role;
 
@@ -117,5 +121,14 @@ public class JwtService {
     private boolean isTokenExpired(String token) {
         return extractClaim(token, Claims::getExpiration).before(new Date());
     }
+
+	public String extractUsernameFromAuthHeader(HttpServletRequest httpServletRequest) {
+		String authHeader = httpServletRequest.getHeader("Authorization");
+		if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+		    throw new BadRequestException("Authorization header missing or invalid");
+		}
+		String token = authHeader.substring(7); // remove "Bearer "
+		return extractUsername(token);
+	}
 }
 

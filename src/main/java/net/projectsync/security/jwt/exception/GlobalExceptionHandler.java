@@ -80,7 +80,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleAll(Exception ex) {
     	ex.printStackTrace(); // optional — log for debugging
-        ApiResponse<Void> response = new ApiResponse<>("An unexpected error occurred (Handled by Global Exception Handler)", Instant.now(), null);
+        ApiResponse<Void> response = new ApiResponse<>(ex.getMessage() + " (Handled by Global Exception Handler)", Instant.now(), null);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 }
