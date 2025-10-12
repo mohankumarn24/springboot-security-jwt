@@ -14,6 +14,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.projectsync.security.jwt.util.ApiResponse;
 
+/*
+ *  AccessDeniedException does not extend Exception in a way that Spring will route it here for @ControllerAdvice by default in security filters.
+ *  By the time Spring Security throws it, it happens before the controller method is entered, inside the security filter chain. 
+ *  That means the exception does not go through the controller's normal exception handling. So, handle explicitly
+ */
 @Component
 @RequiredArgsConstructor
 @Slf4j

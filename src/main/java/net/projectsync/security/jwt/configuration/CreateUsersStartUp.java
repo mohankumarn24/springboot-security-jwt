@@ -22,7 +22,7 @@ public class CreateUsersStartUp {
 				if (userRepo.findByUsername("admin").isEmpty()) {
 					User admin = new User();
 					admin.setUsername("admin");
-					admin.setPassword(encoder.encode("password"));
+					admin.setPassword(encoder.encode("India@123"));
 					admin.setRole(Role.ADMIN);
 					userRepo.save(admin);
 				}
@@ -30,7 +30,7 @@ public class CreateUsersStartUp {
 				if (userRepo.findByUsername("user").isEmpty()) {
 					User user = new User();
 					user.setUsername("user");
-					user.setPassword(encoder.encode("password"));
+					user.setPassword(encoder.encode("India@123"));
 					user.setRole(Role.USER);
 					userRepo.save(user);
 				}
