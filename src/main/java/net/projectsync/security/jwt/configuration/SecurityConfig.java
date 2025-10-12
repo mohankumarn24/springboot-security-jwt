@@ -35,7 +35,7 @@ public class SecurityConfig {
     		// - Refresh token cookie → could be used to issue a new access token via /api/auth/refresh endpoint
     		// 		-- This is technically a stateful cookie, so if you were worried about CSRF here, you might want CSRF just for that endpoint.
     		// 		-- Using SameSite=Strict already mitigates most CSRF attacks because browsers won’t send the cookie in cross-site requests
-	        .csrf(csrf -> csrf.disable())
+	        .csrf(csrf -> csrf.disable())	// need to enable if .sameSite("None") 
 	        // - If your frontend SPA is on a different domain/port, you should configure CORS here
 	        // - Allows your frontend app (running at http://localhost:3000) to make requests to this backend.
 	        // - You specify allowed methods, headers, and whether credentials (cookies, auth headers) are allowed

@@ -30,6 +30,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final UserRepository userRepository;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    
+    // Trusted frontend origin (for cross-site requests)
+    // useful when .sameSite("None") to prevent CSRF attacks
+    // private static final String TRUSTED_ORIGIN = "https://client.example.org";
+    private static final String TRUSTED_ORIGIN = "https://127.0.0.1";
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -43,13 +48,51 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return;
         }
 
+        /**
+         * 1b. Optional: check Origin header for CSRF protection (only for cross-site cookies)
+         * 
+         * - ResponseCookie cookie = ResponseCookie.from("refreshToken", newRefreshToken).httpOnly(true).secure(true).sameSite("None").path("/auth/refresh").build();
+         * - Then any request to https://your-backend.com/auth/refresh from any tab, iframe, or script in the browser, including cross-site pages, 
+         * 	 will automatically include the cookie if the browser considers the request valid
+         * 
+         * - If your frontend is cross-domain (https://client.example.org) and you use SameSite=None, then any other tab or malicious site (https://evil.com) 
+         *   can trigger a request to your backend and the browser will attach the cookie automatically.
+         *   
+         *   	Tab 1: Logged in to https://api.example.com with refresh token cookie
+		 *		Tab 2: User visits https://evil.com
+		 *		      |
+	     *	          | JS or form submits POST to https://api.example.com/auth/refresh
+	     *			  | Browser automatically attaches HttpOnly refresh cookie ()
+		 *
+		 * - How to prevent?
+		 *   -- Check Origin or Referer headers (Only allow requests from your trusted frontend domain.)
+		 *   -- Use a CSRF token (Double Submit Cookie pattern)	(The JS reads a CSRF token (not HttpOnly) and sends it in a header. Backend validates it.)
+		 *   -- JWT Authorization header (recommended for SPAs) (Store access tokens in memory, send via Authorization: Bearer <token>. Browser cannot automatically attach tokens cross-site, so CSRF risk is gone.)
+         */
+        // origin == null → allow request (Postman, curl, same-site GET)
+        String origin = request.getHeader("Origin");	// added by browser automatically
+        if (origin != null && !TRUSTED_ORIGIN.equals(origin)) {
+        	// reject cross-site requests from unknown origins
+            log.warn("Blocked request with invalid origin: {}", origin);
+            
+            // Create a BadCredentialsException (or a custom exception)
+            org.springframework.security.core.AuthenticationException authenticationException =
+                    new org.springframework.security.authentication.BadCredentialsException(
+                            "Invalid origin: " + origin
+                    );
+
+            // Delegate to your existing entry point to return uniform JSON
+            jwtAuthenticationEntryPoint.commence(request, response, authenticationException);
+            return; // stop filter chain
+        }
+        
         // 2️. Extract Bearer token from Authorization header
         String authHeader = request.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7); // remove "Bearer " prefix
 
             try {
-                // 3️. Extract claims once
+                // 3️. Parse claims
                 Claims claims = jwtService.extractAllClaims(token);
                 String username = claims.getSubject();
                 String tokenType = claims.get("type", String.class);
@@ -58,7 +101,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     throw new InvalidJwtTokenException("JWT missing required claims");
                 }
                 
-                // 4a. Only set SecurityContext for access tokens
+                // 4a. Only handle access tokens
                 if ("access".equals(tokenType)) {
                 	// Get role from claims
                 	String roleName = claims.get("role", String.class);
