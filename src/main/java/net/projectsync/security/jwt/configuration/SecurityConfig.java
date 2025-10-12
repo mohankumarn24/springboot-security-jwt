@@ -68,7 +68,8 @@ public class SecurityConfig {
 	        																// AuthenticationEntryPoint / AccessDeniedHandler is for pre-controller, filter-chain security exceptions (401 / 403)
 	        																// See: JWT Handling Checklist
 	        .authorizeHttpRequests(auth -> auth
-	            .antMatchers("/api/auth/**").permitAll()			// public endpoints (login/register, etc.). No authentication is required to access these endpoints
+	            .antMatchers("/api/auth/**", "/actuator/**", "/management/**").permitAll()			
+	            													// public endpoints (login/register, etc.). No authentication is required to access these endpoints
 	            .antMatchers("/api/admin/**").hasRole("ADMIN")		// only accessible by users with role ADMIN. JWT authentication needed
 	            .antMatchers("/api/user/**").hasRole("USER")		// only accessible by users with role USER. JWT authentication needed
 	            .anyRequest().authenticated()						// Any other endpoint → must be authenticated (using JWT)

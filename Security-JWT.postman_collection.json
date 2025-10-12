@@ -13,7 +13,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"username\": \"sachin\",\r\n  \"password\": \"password\",\r\n  \"role\": \"USER\"\r\n}",
+					"raw": "{\r\n  \"username\": \"sachin\",\r\n  \"password\": \"India@123\",\r\n  \"role\": \"USER\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -236,7 +236,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"username\": \"sachin\",\r\n  \"password\": \"password\"\r\n}",
+					"raw": "{\r\n  \"username\": \"sachin\",\r\n  \"password\": \"India@123\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -916,7 +916,7 @@
 				"header": [
 					{
 						"key": "X-XSRF-TOKEN",
-						"value": "76cc9995-2e0f-43a8-83d1-16f4d3a3b3d8",
+						"value": "5ee0238d-2b38-4f52-b787-7683e1fb324b",
 						"type": "text"
 					}
 				],
@@ -1257,6 +1257,124 @@
 					],
 					"cookie": [],
 					"body": "{\n    \"message\": \"Logged out successfully\",\n    \"timestamp\": \"2025-10-12T07:51:16.652191700Z\",\n    \"data\": null\n}"
+				}
+			]
+		},
+		{
+			"name": "7a - Actuator (Health)",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"username\": \"sachin\",\r\n  \"password\": \"India@123\"\r\n}"
+				},
+				"url": {
+					"raw": "https://localhost:8443/management/health",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "8443",
+					"path": [
+						"management",
+						"health"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "7 - Actuator (Redis Health)",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"username\": \"sachin\",\r\n  \"password\": \"India@123\"\r\n}"
+						},
+						"url": {
+							"raw": "https://localhost:8443/actuator/health",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "8443",
+							"path": [
+								"actuator",
+								"health"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "",
+					"header": [
+						{
+							"key": "Vary",
+							"value": "Origin"
+						},
+						{
+							"key": "Vary",
+							"value": "Access-Control-Request-Method"
+						},
+						{
+							"key": "Vary",
+							"value": "Access-Control-Request-Headers"
+						},
+						{
+							"key": "X-Content-Type-Options",
+							"value": "nosniff"
+						},
+						{
+							"key": "X-XSS-Protection",
+							"value": "1; mode=block"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "no-cache, no-store, max-age=0, must-revalidate"
+						},
+						{
+							"key": "Pragma",
+							"value": "no-cache"
+						},
+						{
+							"key": "Expires",
+							"value": "0"
+						},
+						{
+							"key": "Strict-Transport-Security",
+							"value": "max-age=31536000 ; includeSubDomains"
+						},
+						{
+							"key": "X-Frame-Options",
+							"value": "DENY"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/vnd.spring-boot.actuator.v3+json"
+						},
+						{
+							"key": "Transfer-Encoding",
+							"value": "chunked"
+						},
+						{
+							"key": "Date",
+							"value": "Sun, 12 Oct 2025 11:00:39 GMT"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=60"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"status\": \"UP\",\n    \"components\": {\n        \"db\": {\n            \"status\": \"UP\",\n            \"details\": {\n                \"database\": \"PostgreSQL\",\n                \"validationQuery\": \"isValid()\"\n            }\n        },\n        \"diskSpace\": {\n            \"status\": \"UP\",\n            \"details\": {\n                \"total\": 219554357248,\n                \"free\": 80964771840,\n                \"threshold\": 10485760,\n                \"exists\": true\n            }\n        },\n        \"ping\": {\n            \"status\": \"UP\"\n        },\n        \"redis\": {\n            \"status\": \"UP\",\n            \"details\": {\n                \"Redis\": \"Available\"\n            }\n        }\n    }\n}"
 				}
 			]
 		}
