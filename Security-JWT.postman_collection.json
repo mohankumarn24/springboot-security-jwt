@@ -65,7 +65,7 @@
 					},
 					"status": "Created",
 					"code": 201,
-					"_postman_previewlanguage": "",
+					"_postman_previewlanguage": null,
 					"header": [
 						{
 							"key": "Vary",
@@ -117,7 +117,7 @@
 						},
 						{
 							"key": "Date",
-							"value": "Thu, 09 Oct 2025 11:15:37 GMT"
+							"value": "Sun, 12 Oct 2025 07:28:35 GMT"
 						},
 						{
 							"key": "Keep-Alive",
@@ -129,10 +129,10 @@
 						}
 					],
 					"cookie": [],
-					"body": "{\n    \"message\": \"User registered successfully\",\n    \"timestamp\": \"2025-10-09T11:15:37.034635800Z\",\n    \"data\": {\n        \"id\": 6,\n        \"username\": \"sachin\",\n        \"role\": \"USER\",\n        \"createdAt\": \"2025-10-09T11:15:37.031632800Z\",\n        \"updatedAt\": \"2025-10-09T11:15:37.031632800Z\"\n    }\n}"
+					"body": "{\n    \"message\": \"User registered successfully\",\n    \"timestamp\": \"2025-10-12T07:28:35.687350200Z\",\n    \"data\": {\n        \"id\": 19,\n        \"username\": \"sachin\",\n        \"role\": \"USER\",\n        \"createdAt\": \"2025-10-12T07:28:35.667380900Z\",\n        \"updatedAt\": \"2025-10-12T07:28:35.667380900Z\"\n    }\n}"
 				},
 				{
-					"name": "1 - Sign up (User already exists)",
+					"name": "1 - Sign up",
 					"originalRequest": {
 						"method": "POST",
 						"header": [],
@@ -213,7 +213,7 @@
 						},
 						{
 							"key": "Date",
-							"value": "Thu, 09 Oct 2025 11:16:05 GMT"
+							"value": "Sun, 12 Oct 2025 07:28:40 GMT"
 						},
 						{
 							"key": "Keep-Alive",
@@ -225,7 +225,7 @@
 						}
 					],
 					"cookie": [],
-					"body": "{\n    \"timestamp\": \"2025-10-09T11:16:05.374+00:00\",\n    \"status\": 409,\n    \"error\": \"Conflict\",\n    \"path\": \"/api/auth/signup\"\n}"
+					"body": "{\n    \"message\": \"Username already exists\",\n    \"timestamp\": \"2025-10-12T07:28:40.862097700Z\",\n    \"data\": null\n}"
 				}
 			]
 		},
@@ -288,7 +288,7 @@
 					},
 					"status": "OK",
 					"code": 200,
-					"_postman_previewlanguage": "",
+					"_postman_previewlanguage": null,
 					"header": [
 						{
 							"key": "Vary",
@@ -304,7 +304,11 @@
 						},
 						{
 							"key": "Set-Cookie",
-							"value": "refreshToken=eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYWNoaW4iLCJ0eXBlIjoicmVmcmVzaCIsImV4cCI6MTc2MDYxMzQwMiwiaWF0IjoxNzYwMDA4NjAyfQ.LYG4YOAivbN4g3_jmXE6Fxug9-m3MfHNEXtfMOFiP2fI0q0SPZBA6wLRBdmRIn3w-Ldb0MpQ5_DDaHGOcd54DA; Path=/api/auth; Max-Age=604800; Expires=Thu, 16 Oct 2025 11:16:42 GMT; Secure; HttpOnly; SameSite=Strict"
+							"value": "refresh_token=eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYWNoaW4iLCJ0eXBlIjoicmVmcmVzaCIsImV4cCI6MTc2MDg1ODkzMSwiaWF0IjoxNzYwMjU0MTMxfQ.jgvLEc-XyeY_5H9yk2uPthExUt4DPk4sk-atepesehHk-lsg2eHD094wv_PZMYsy3l9z2TGhcrGT1V_MadIEdQ; Path=/api/auth; Max-Age=604800; Expires=Sun, 19 Oct 2025 07:28:51 GMT; Secure; HttpOnly; SameSite=Strict"
+						},
+						{
+							"key": "Set-Cookie",
+							"value": "XSRF-TOKEN=3fa8cfc5-32dc-4cd9-8e5b-a40ff1dd9588; Path=/; Max-Age=604800; Expires=Sun, 19 Oct 2025 07:28:51 GMT; Secure; SameSite=None"
 						},
 						{
 							"key": "X-Content-Type-Options",
@@ -344,7 +348,7 @@
 						},
 						{
 							"key": "Date",
-							"value": "Thu, 09 Oct 2025 11:16:43 GMT"
+							"value": "Sun, 12 Oct 2025 07:28:51 GMT"
 						},
 						{
 							"key": "Keep-Alive",
@@ -356,10 +360,10 @@
 						}
 					],
 					"cookie": [],
-					"body": "{\n    \"message\": \"Signed in successfully\",\n    \"timestamp\": \"2025-10-09T11:16:43.002184Z\",\n    \"data\": {\n        \"user\": {\n            \"id\": 6,\n            \"username\": \"sachin\",\n            \"role\": \"USER\",\n            \"createdAt\": \"2025-10-09T11:15:37.031633Z\",\n            \"updatedAt\": \"2025-10-09T11:15:37.031633Z\"\n        },\n        \"accessToken\": \"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYWNoaW4iLCJyb2xlIjoiVVNFUiIsInR5cGUiOiJhY2Nlc3MiLCJleHAiOjE3NjAwMDk1MDIsImlhdCI6MTc2MDAwODYwMn0.hUAbvchm8VnQ3NUxWu8BtNFPDIRmXQNdIr8qS7ijQFqXZRc4dfD_3A5G0fMl5v1pKREj6vdxa9OKExXPdNtxlw\"\n    }\n}"
+					"body": "{\n    \"message\": \"Signed in successfully\",\n    \"timestamp\": \"2025-10-12T07:28:51.399247200Z\",\n    \"data\": {\n        \"accessToken\": \"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYWNoaW4iLCJyb2xlIjoiVVNFUiIsInR5cGUiOiJhY2Nlc3MiLCJleHAiOjE3NjAyNTUwMzEsImlhdCI6MTc2MDI1NDEzMX0.pxgS79bZPeigjZzfRkHo6slTnYUcRkz8m5Itqcvj4FdgmR1bohO4-eYeEZ-urh3bHuyEigfUQzBQBNmRgNuY6g\",\n        \"user\": {\n            \"id\": 19,\n            \"username\": \"sachin\",\n            \"role\": \"USER\",\n            \"createdAt\": \"2025-10-12T07:28:35.667381Z\",\n            \"updatedAt\": \"2025-10-12T07:28:35.667381Z\"\n        }\n    }\n}"
 				},
 				{
-					"name": "2 - Sign in (User already signed in)",
+					"name": "2 - Sign in",
 					"originalRequest": {
 						"method": "POST",
 						"header": [],
@@ -431,12 +435,16 @@
 							"value": "DENY"
 						},
 						{
-							"key": "Content-Length",
-							"value": "0"
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Transfer-Encoding",
+							"value": "chunked"
 						},
 						{
 							"key": "Date",
-							"value": "Thu, 09 Oct 2025 11:17:37 GMT"
+							"value": "Sun, 12 Oct 2025 07:28:58 GMT"
 						},
 						{
 							"key": "Keep-Alive",
@@ -448,7 +456,7 @@
 						}
 					],
 					"cookie": [],
-					"body": null
+					"body": "{\n    \"message\": \"User already logged in\",\n    \"timestamp\": \"2025-10-12T07:28:58.347414800Z\",\n    \"data\": null\n}"
 				}
 			]
 		},
@@ -493,7 +501,13 @@
 					"name": "3 - Access authorized endpoint",
 					"originalRequest": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
 							"raw": ""
@@ -514,7 +528,7 @@
 					},
 					"status": "OK",
 					"code": 200,
-					"_postman_previewlanguage": "",
+					"_postman_previewlanguage": null,
 					"header": [
 						{
 							"key": "Vary",
@@ -566,7 +580,7 @@
 						},
 						{
 							"key": "Date",
-							"value": "Thu, 09 Oct 2025 11:18:18 GMT"
+							"value": "Sun, 12 Oct 2025 07:29:11 GMT"
 						},
 						{
 							"key": "Keep-Alive",
@@ -578,7 +592,201 @@
 						}
 					],
 					"cookie": [],
-					"body": "{\n    \"message\": \"User tasks fetched successfully\",\n    \"timestamp\": \"2025-10-09T11:18:18.377684200Z\",\n    \"data\": [\n        \"Task 1\",\n        \"Task 2\"\n    ]\n}"
+					"body": "{\n    \"message\": \"User tasks fetched successfully\",\n    \"timestamp\": \"2025-10-12T07:29:11.009482400Z\",\n    \"data\": null\n}"
+				},
+				{
+					"name": "3 - Access authorized endpoint",
+					"originalRequest": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://localhost:8443/api/user/tasks",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "8443",
+							"path": [
+								"api",
+								"user",
+								"tasks"
+							]
+						}
+					},
+					"status": "Unauthorized",
+					"code": 401,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "Vary",
+							"value": "Origin"
+						},
+						{
+							"key": "Vary",
+							"value": "Access-Control-Request-Method"
+						},
+						{
+							"key": "Vary",
+							"value": "Access-Control-Request-Headers"
+						},
+						{
+							"key": "X-Content-Type-Options",
+							"value": "nosniff"
+						},
+						{
+							"key": "X-XSS-Protection",
+							"value": "1; mode=block"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "no-cache, no-store, max-age=0, must-revalidate"
+						},
+						{
+							"key": "Pragma",
+							"value": "no-cache"
+						},
+						{
+							"key": "Expires",
+							"value": "0"
+						},
+						{
+							"key": "Strict-Transport-Security",
+							"value": "max-age=31536000 ; includeSubDomains"
+						},
+						{
+							"key": "X-Frame-Options",
+							"value": "DENY"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json;charset=UTF-8"
+						},
+						{
+							"key": "Transfer-Encoding",
+							"value": "chunked"
+						},
+						{
+							"key": "Date",
+							"value": "Sun, 12 Oct 2025 07:29:20 GMT"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=60"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"Full authentication is required to access this resource (exception handled by JwtAuthenticationEntryPoint)\",\n    \"timestamp\": \"2025-10-12T07:29:20.122502Z\",\n    \"data\": null\n}"
+				},
+				{
+					"name": "3 - Access authorized endpoint",
+					"originalRequest": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://localhost:8443/api/user/tasks",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "8443",
+							"path": [
+								"api",
+								"user",
+								"tasks"
+							]
+						}
+					},
+					"status": "Unauthorized",
+					"code": 401,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "Vary",
+							"value": "Origin"
+						},
+						{
+							"key": "Vary",
+							"value": "Access-Control-Request-Method"
+						},
+						{
+							"key": "Vary",
+							"value": "Access-Control-Request-Headers"
+						},
+						{
+							"key": "X-Content-Type-Options",
+							"value": "nosniff"
+						},
+						{
+							"key": "X-XSS-Protection",
+							"value": "1; mode=block"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "no-cache, no-store, max-age=0, must-revalidate"
+						},
+						{
+							"key": "Pragma",
+							"value": "no-cache"
+						},
+						{
+							"key": "Expires",
+							"value": "0"
+						},
+						{
+							"key": "Strict-Transport-Security",
+							"value": "max-age=31536000 ; includeSubDomains"
+						},
+						{
+							"key": "X-Frame-Options",
+							"value": "DENY"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json;charset=UTF-8"
+						},
+						{
+							"key": "Transfer-Encoding",
+							"value": "chunked"
+						},
+						{
+							"key": "Date",
+							"value": "Sun, 12 Oct 2025 07:29:28 GMT"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=60"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"Invalid token (exception handled by JwtAuthenticationEntryPoint)\",\n    \"timestamp\": \"2025-10-12T07:29:28.068223Z\",\n    \"data\": null\n}"
 				}
 			]
 		},
@@ -633,7 +841,7 @@
 					},
 					"status": "Forbidden",
 					"code": 403,
-					"_postman_previewlanguage": "",
+					"_postman_previewlanguage": null,
 					"header": [
 						{
 							"key": "Vary",
@@ -676,12 +884,16 @@
 							"value": "DENY"
 						},
 						{
-							"key": "Content-Length",
-							"value": "0"
+							"key": "Content-Type",
+							"value": "application/json;charset=UTF-8"
+						},
+						{
+							"key": "Transfer-Encoding",
+							"value": "chunked"
 						},
 						{
 							"key": "Date",
-							"value": "Thu, 09 Oct 2025 11:18:39 GMT"
+							"value": "Sun, 12 Oct 2025 07:29:46 GMT"
 						},
 						{
 							"key": "Keep-Alive",
@@ -693,7 +905,7 @@
 						}
 					],
 					"cookie": [],
-					"body": ""
+					"body": "{\n    \"message\": \"Access Denied (handled by JwtAccessDeniedHandler)\",\n    \"timestamp\": \"2025-10-12T07:29:46.713942800Z\",\n    \"data\": null\n}"
 				}
 			]
 		},
@@ -701,7 +913,13 @@
 			"name": "5 - Refresh tokens",
 			"request": {
 				"method": "POST",
-				"header": [],
+				"header": [
+					{
+						"key": "X-XSRF-TOKEN",
+						"value": "76cc9995-2e0f-43a8-83d1-16f4d3a3b3d8",
+						"type": "text"
+					}
+				],
 				"url": {
 					"raw": "https://localhost:8443/api/auth/refresh",
 					"protocol": "https",
@@ -721,7 +939,13 @@
 					"name": "5 - Refresh tokens",
 					"originalRequest": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "X-XSRF-TOKEN",
+								"value": "3fa8cfc5-32dc-4cd9-8e5b-a40ff1dd9588",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "https://localhost:8443/api/auth/refresh",
 							"protocol": "https",
@@ -754,7 +978,7 @@
 						},
 						{
 							"key": "Set-Cookie",
-							"value": "refreshToken=eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYWNoaW4iLCJ0eXBlIjoicmVmcmVzaCIsImV4cCI6MTc2MDYxMzk0MiwiaWF0IjoxNzYwMDA5MTQyfQ.c-dHn92vfX3TDFChy_GpvpGfcVoxf_QYryuVnHiFw-fVn2NfglufeTyRIOvFB_u9j2GiFwb2YZf5xM2WKmyYoA; Path=/api/auth/refresh; Max-Age=604800; Expires=Thu, 16 Oct 2025 11:25:42 GMT; Secure; HttpOnly; SameSite=Strict"
+							"value": "refresh_token=eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYWNoaW4iLCJ0eXBlIjoicmVmcmVzaCIsImV4cCI6MTc2MDg1OTAyMiwiaWF0IjoxNzYwMjU0MjIyfQ.sinITAGrhC1jgTX3t5rYn-vTtM6Pp1GEl9-7VmDlnK58fPoe-Y8d8t7McNCZkM0Vjq6vlWkZJwBzFKDkrMcRxg; Path=/api/auth; Max-Age=604800; Expires=Sun, 19 Oct 2025 07:30:22 GMT; Secure; HttpOnly; SameSite=Strict"
 						},
 						{
 							"key": "X-Content-Type-Options",
@@ -794,7 +1018,7 @@
 						},
 						{
 							"key": "Date",
-							"value": "Thu, 09 Oct 2025 11:25:42 GMT"
+							"value": "Sun, 12 Oct 2025 07:30:22 GMT"
 						},
 						{
 							"key": "Keep-Alive",
@@ -806,7 +1030,100 @@
 						}
 					],
 					"cookie": [],
-					"body": "{\n    \"message\": \"Access token and Refresh token refreshed successfully\",\n    \"timestamp\": \"2025-10-09T11:25:42.922059200Z\",\n    \"data\": {\n        \"user\": {\n            \"id\": 6,\n            \"username\": \"sachin\",\n            \"role\": \"USER\",\n            \"createdAt\": \"2025-10-09T11:15:37.031633Z\",\n            \"updatedAt\": \"2025-10-09T11:15:37.031633Z\"\n        },\n        \"accessToken\": \"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYWNoaW4iLCJyb2xlIjoiVVNFUiIsInR5cGUiOiJhY2Nlc3MiLCJleHAiOjE3NjAwMTAwNDIsImlhdCI6MTc2MDAwOTE0Mn0.31fXJAD4b-cazm9RywfismYINzAFJ7l_urL3B0kJ8R5_KfMAt4sUi94-ahRtHMhW398OpkDqsz-s1RagPdSjeQ\"\n    }\n}"
+					"body": "{\n    \"message\": \"Tokens refreshed successfully\",\n    \"timestamp\": \"2025-10-12T07:30:22.793225200Z\",\n    \"data\": {\n        \"accessToken\": \"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYWNoaW4iLCJyb2xlIjoiVVNFUiIsInR5cGUiOiJhY2Nlc3MiLCJleHAiOjE3NjAyNTUxMjIsImlhdCI6MTc2MDI1NDIyMn0.v23-Qu-WvS4LkOILlgD7OjLqKRZ4_h2mBwCbTmCP7wyaIFWTOFvQFEUJla_MV3sOhKBelXWvRZ6LufMNNP1Hqw\",\n        \"user\": {\n            \"id\": 19,\n            \"username\": \"sachin\",\n            \"role\": \"USER\",\n            \"createdAt\": \"2025-10-12T07:28:35.667381Z\",\n            \"updatedAt\": \"2025-10-12T07:28:35.667381Z\"\n        }\n    }\n}"
+				},
+				{
+					"name": "5 - Refresh tokens",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-XSRF-TOKEN",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://localhost:8443/api/auth/refresh",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "8443",
+							"path": [
+								"api",
+								"auth",
+								"refresh"
+							]
+						}
+					},
+					"status": "Forbidden",
+					"code": 403,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "Vary",
+							"value": "Origin"
+						},
+						{
+							"key": "Vary",
+							"value": "Access-Control-Request-Method"
+						},
+						{
+							"key": "Vary",
+							"value": "Access-Control-Request-Headers"
+						},
+						{
+							"key": "X-Content-Type-Options",
+							"value": "nosniff"
+						},
+						{
+							"key": "X-XSS-Protection",
+							"value": "1; mode=block"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "no-cache, no-store, max-age=0, must-revalidate"
+						},
+						{
+							"key": "Pragma",
+							"value": "no-cache"
+						},
+						{
+							"key": "Expires",
+							"value": "0"
+						},
+						{
+							"key": "Strict-Transport-Security",
+							"value": "max-age=31536000 ; includeSubDomains"
+						},
+						{
+							"key": "X-Frame-Options",
+							"value": "DENY"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Transfer-Encoding",
+							"value": "chunked"
+						},
+						{
+							"key": "Date",
+							"value": "Sun, 12 Oct 2025 07:30:59 GMT"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=60"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"message\": \"CSRF token mismatch\",\n    \"timestamp\": \"2025-10-12T07:30:59.326337300Z\",\n    \"data\": null\n}"
 				}
 			]
 		},
@@ -841,10 +1158,16 @@
 			},
 			"response": [
 				{
-					"name": "6 - Logout (Logged out successfully)",
+					"name": "New Request",
 					"originalRequest": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "X-XSRF-TOKEN",
+								"value": "b664ea4f-6fb1-45b0-894b-bddd56445331",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "https://localhost:8443/api/auth/logout",
 							"protocol": "https",
@@ -877,7 +1200,11 @@
 						},
 						{
 							"key": "Set-Cookie",
-							"value": "refreshToken=; Path=/api/auth/refresh; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure; HttpOnly; SameSite=Strict"
+							"value": "refresh_token=; Path=/api/auth; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure; HttpOnly; SameSite=Strict"
+						},
+						{
+							"key": "Set-Cookie",
+							"value": "XSRF-TOKEN=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure; SameSite=None"
 						},
 						{
 							"key": "X-Content-Type-Options",
@@ -917,7 +1244,7 @@
 						},
 						{
 							"key": "Date",
-							"value": "Thu, 09 Oct 2025 11:23:22 GMT"
+							"value": "Sun, 12 Oct 2025 07:51:16 GMT"
 						},
 						{
 							"key": "Keep-Alive",
@@ -929,90 +1256,7 @@
 						}
 					],
 					"cookie": [],
-					"body": "{\n    \"message\": \"Logged out successfully\",\n    \"timestamp\": \"2025-10-09T11:23:22.829469Z\",\n    \"data\": null\n}"
-				},
-				{
-					"name": "6 - Logout (User already logged out)",
-					"originalRequest": {
-						"method": "POST",
-						"header": [],
-						"url": {
-							"raw": "https://localhost:8443/api/auth/logout",
-							"protocol": "https",
-							"host": [
-								"localhost"
-							],
-							"port": "8443",
-							"path": [
-								"api",
-								"auth",
-								"logout"
-							]
-						}
-					},
-					"status": "Bad Request",
-					"code": 400,
-					"_postman_previewlanguage": null,
-					"header": [
-						{
-							"key": "Vary",
-							"value": "Origin"
-						},
-						{
-							"key": "Vary",
-							"value": "Access-Control-Request-Method"
-						},
-						{
-							"key": "Vary",
-							"value": "Access-Control-Request-Headers"
-						},
-						{
-							"key": "X-Content-Type-Options",
-							"value": "nosniff"
-						},
-						{
-							"key": "X-XSS-Protection",
-							"value": "1; mode=block"
-						},
-						{
-							"key": "Cache-Control",
-							"value": "no-cache, no-store, max-age=0, must-revalidate"
-						},
-						{
-							"key": "Pragma",
-							"value": "no-cache"
-						},
-						{
-							"key": "Expires",
-							"value": "0"
-						},
-						{
-							"key": "Strict-Transport-Security",
-							"value": "max-age=31536000 ; includeSubDomains"
-						},
-						{
-							"key": "X-Frame-Options",
-							"value": "DENY"
-						},
-						{
-							"key": "Content-Type",
-							"value": "application/json"
-						},
-						{
-							"key": "Transfer-Encoding",
-							"value": "chunked"
-						},
-						{
-							"key": "Date",
-							"value": "Thu, 09 Oct 2025 11:24:04 GMT"
-						},
-						{
-							"key": "Connection",
-							"value": "close"
-						}
-					],
-					"cookie": [],
-					"body": "{\n    \"message\": \"User already logged out\",\n    \"timestamp\": \"2025-10-09T11:24:04.224524300Z\",\n    \"data\": null\n}"
+					"body": "{\n    \"message\": \"Logged out successfully\",\n    \"timestamp\": \"2025-10-12T07:51:16.652191700Z\",\n    \"data\": null\n}"
 				}
 			]
 		}
