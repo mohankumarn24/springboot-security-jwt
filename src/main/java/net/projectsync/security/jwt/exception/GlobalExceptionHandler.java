@@ -26,7 +26,7 @@ public class GlobalExceptionHandler {
 	// ------------------- Custom API exceptions -------------------
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<ApiResponse<Void>> handleApiException(ApiException ex) {
-        ApiResponse<Void> response = new ApiResponse<>(ex.getMessage(), Instant.now(), null);
+        ApiResponse<Void> response = new ApiResponse<>("GEH: " + ex.getMessage(), Instant.now(), null);
         return ResponseEntity.status(ex.getStatus().value()).body(response);
     }
     
@@ -40,7 +40,7 @@ public class GlobalExceptionHandler {
             String message = error.getDefaultMessage();
             errors.put(field, message);
         });
-        ApiResponse<Map<String, String>> response = new ApiResponse<>("Validation failed", Instant.now(), errors);
+        ApiResponse<Map<String, String>> response = new ApiResponse<>("GEH: Validation failed", Instant.now(), errors);
         return ResponseEntity.badRequest().body(response);
     }
     
@@ -50,7 +50,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Map<String, String>>> handleConstraintViolation(ConstraintViolationException ex) {
         Map<String, String> errors = new HashMap<>();
         ex.getConstraintViolations().forEach(cv -> errors.put(cv.getPropertyPath().toString(), cv.getMessage()));
-        ApiResponse<Map<String, String>> response = new ApiResponse<>("Validation failed", Instant.now(), errors);
+        ApiResponse<Map<String, String>> response = new ApiResponse<>("GEH: Validation failed", Instant.now(), errors);
         return ResponseEntity.badRequest().body(response);
     }
 
@@ -63,7 +63,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(NoHandlerFoundException.class)
     public ResponseEntity<ApiResponse<Void>> handleNoHandlerFound(NoHandlerFoundException ex) {
-        ApiResponse<Void> response = new ApiResponse<>("Endpoint not found: " + ex.getRequestURL(), Instant.now(), null);
+        ApiResponse<Void> response = new ApiResponse<>("GEH: No handler found for " + ex.getHttpMethod() + " " + ex.getRequestURL(), Instant.now(), null);
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
@@ -72,7 +72,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<ApiResponse<Void>> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex) {
         String allowedMethods = String.join(", ", ex.getSupportedHttpMethods().stream().map(Enum::name).toList());
-        ApiResponse<Void> response = new ApiResponse<>("Method " + ex.getMethod() + " not allowed. Allowed: " + allowedMethods, Instant.now(), null);
+        ApiResponse<Void> response = new ApiResponse<>("GEH: Method " + ex.getMethod() + " not allowed. Allowed: " + allowedMethods, Instant.now(), null);
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(response);
     }
 
@@ -80,7 +80,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleAll(Exception ex) {
     	ex.printStackTrace(); // optional — log for debugging
-        ApiResponse<Void> response = new ApiResponse<>(ex.getMessage() + " (Handled by Global Exception Handler)", Instant.now(), null);
+        ApiResponse<Void> response = new ApiResponse<>("GEH: " + ex.getMessage(), Instant.now(), null);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 }

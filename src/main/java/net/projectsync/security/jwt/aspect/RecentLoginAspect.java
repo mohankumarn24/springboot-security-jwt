@@ -11,7 +11,8 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import net.projectsync.security.jwt.annotation.RecentLoginRequired;
-import net.projectsync.security.jwt.exception.RecentLoginRequiredException;
+import net.projectsync.security.jwt.exception.ForbiddenException;
+import net.projectsync.security.jwt.exception.UnauthorizedException;
 
 /**
  * Added for '/change-password' endpoint
@@ -30,7 +31,7 @@ public class RecentLoginAspect {
     public void checkRecentLogin(RecentLoginRequired recentLogin) {
         String token = extractTokenFromRequest();
         if (token == null) {
-            throw new RecentLoginRequiredException("Missing access token");
+            throw new UnauthorizedException("Missing access token");
         }
 
         Claims claims = Jwts.parser()
@@ -42,7 +43,7 @@ public class RecentLoginAspect {
         Instant allowedTime = Instant.now().minusSeconds(recentLogin.maxAgeSeconds());
 
         if (issuedAt.toInstant().isBefore(allowedTime)) {
-            throw new RecentLoginRequiredException("Token already expired/Invalid token");
+            throw new ForbiddenException("Token already expired/Invalid token");
         }
     }
 

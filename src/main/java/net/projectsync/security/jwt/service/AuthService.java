@@ -7,7 +7,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
-
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -138,8 +137,12 @@ public class AuthService {
         return ResponseEntity.ok(apiResponse);
 	}
 	
-	public ResponseEntity<ApiResponse<TokenResponse>> refresh(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, String oldRefreshToken, String csrfCookieValue,
-			String csrfHeaderValue) {
+	public ResponseEntity<ApiResponse<TokenResponse>> refresh(
+												HttpServletRequest httpServletRequest, 
+												HttpServletResponse httpServletResponse, 
+												String oldRefreshToken, 
+												String csrfToken,
+												String csrfHeaderValue) {
 		/*
         // Read refresh token from cookie
         Cookie[] cookies = request.getCookies();
@@ -160,7 +163,7 @@ public class AuthService {
         }
 
         // 2. CSRF double-submit validation
-        if (csrfCookieValue == null || csrfHeaderValue == null || !csrfCookieValue.equals(csrfHeaderValue)) {
+        if (csrfToken == null || csrfHeaderValue == null || !csrfToken.equals(csrfHeaderValue)) {
             throw new ForbiddenException("CSRF token mismatch");
         }
         
@@ -208,7 +211,7 @@ public class AuthService {
 												HttpServletRequest httpServletRequest, 
 												HttpServletResponse httpServletResponse, 
 												String refreshToken, 
-												String csrfCookieValue,
+												String csrfToken,
 												String csrfHeaderValue) {
 
 		// 1️. If no refresh token, user is effectively already logged out
@@ -217,7 +220,7 @@ public class AuthService {
         }
 
         // 2️. Double Submit CSRF protection
-        if (csrfCookieValue == null || csrfHeaderValue == null || !csrfCookieValue.equals(csrfHeaderValue)) {
+        if (csrfToken == null || csrfHeaderValue == null || !csrfToken.equals(csrfHeaderValue)) {
             throw new ForbiddenException("CSRF token mismatch");
         }
         
@@ -301,18 +304,18 @@ public class AuthService {
     public ResponseEntity<ApiResponse<Void>> changePassword(
 									            HttpServletRequest httpServletRequest,
 									            HttpServletResponse httpServletResponse,
-									            String csrfCookieValue,
-									            String csrfHeaderValue,
 									            String refreshToken,
+									            String csrfToken,
+									            String csrfHeaderValue,
 									            ChangePasswordRequest changePasswordRequest) {
 
     	// 1a. user already changed password
-    	if (csrfCookieValue == null && refreshToken == null) {
+    	if (csrfToken == null && refreshToken == null) {
     		throw new UserNotActiveException("User not active. Please login again");
     	}
     	
-        // 1️b.. Double-Submit CSRF Protection
-        if (csrfCookieValue == null || csrfHeaderValue == null || !csrfCookieValue.equals(csrfHeaderValue)) {
+        // 1ï¸b.. Double-Submit CSRF Protection
+        if (csrfToken == null || csrfHeaderValue == null || !csrfToken.equals(csrfHeaderValue)) {
             throw new ForbiddenException("CSRF token mismatch");
         }
 

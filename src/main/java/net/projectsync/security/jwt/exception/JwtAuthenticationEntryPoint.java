@@ -33,11 +33,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         response.setCharacterEncoding("UTF-8");
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
-        ApiResponse<Void> apiResponse = new ApiResponse<>(
-            authException.getMessage() + " (exception handled by JwtAuthenticationEntryPoint)",
-            Instant.now(),
-            null
-        );
+        ApiResponse<Void> apiResponse = new ApiResponse<>("JwtAuthenticationEntryPoint Handler: " + authException.getMessage(), Instant.now(), null);
 
         // response.getWriter().write(objectMapper.writeValueAsString(apiResponse));
         try (PrintWriter writer = response.getWriter()) {

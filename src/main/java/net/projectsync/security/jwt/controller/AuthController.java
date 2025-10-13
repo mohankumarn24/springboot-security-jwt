@@ -1,7 +1,6 @@
 package net.projectsync.security.jwt.controller;
 
 import java.time.Instant;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -44,10 +43,13 @@ public class AuthController {
 	@PostMapping("/signup")
 	public ResponseEntity<ApiResponse<UserDTO>> signup(
 													HttpServletRequest httpServletRequest,
-													@Valid @RequestBody SignupRequest signupRequest, 	// @Valid triggers validation on the fields inside SignupRequest ie., username, password
-													HttpServletResponse httpServletResponse) {
+													HttpServletResponse httpServletResponse,
+													@Valid @RequestBody SignupRequest signupRequest) { 	// @Valid triggers validation on the fields inside SignupRequest ie., username, password
 
-		return authService.signup(httpServletRequest, httpServletResponse, signupRequest);
+		return authService.signup(
+				httpServletRequest, 
+				httpServletResponse, 
+				signupRequest);
 	}
 
 	@PostMapping("/signin")
@@ -56,7 +58,10 @@ public class AuthController {
 													HttpServletResponse httpServletResponse, 
 													@Valid @RequestBody SignInRequest signInRequest) {	// @Valid triggers validation on the fields inside signInRequest ie., username, password
 
-		return authService.signin(httpServletRequest, httpServletResponse, signInRequest);
+		return authService.signin(
+				httpServletRequest, 
+				httpServletResponse, 
+				signInRequest);
 	}
 
 	@PostMapping("/refresh")
@@ -69,8 +74,12 @@ public class AuthController {
 													@RequestHeader(value = "X-XSRF-TOKEN", required = false) String csrfHeaderValue) {
 
 		AuthCookies authCookies = CookieUtils.getAuthCookies(httpServletRequest, cookieProperties);
-		return authService.refresh(httpServletRequest, httpServletResponse, authCookies.getRefreshToken(),
-				authCookies.getCsrfToken(), csrfHeaderValue);
+		return authService.refresh(
+				httpServletRequest, 
+				httpServletResponse, 
+				authCookies.getRefreshToken(),
+				authCookies.getCsrfToken(), 
+				csrfHeaderValue);
 	}
 
 	@PostMapping("/logout")
@@ -84,13 +93,18 @@ public class AuthController {
 
 		// AuthCookies authCookies = CookieUtils.getAuthCookies(httpServletRequest, cookieProperties);		// if user hits '/logout' twice, throws 'Authentication cookies not found' instead of 'User already logged out'. Use 'getAuthCookiesLogout()'
 		AuthCookies authCookies = CookieUtils.getAuthCookiesLogout(httpServletRequest, cookieProperties);
-		return authService.logout(httpServletRequest, httpServletResponse, authCookies.getRefreshToken(),
-				authCookies.getCsrfToken(), csrfHeaderValue);
+		return authService.logout(
+				httpServletRequest, 
+				httpServletResponse, 
+				authCookies.getRefreshToken(),
+				authCookies.getCsrfToken(), 
+				csrfHeaderValue);
 	}
 	
-	// Added files - RecentLoginRequired custom annotation, RecentLoginAspect aspect, ChangePasswordRequest DTO, RecentLoginRequiredException, UserNotActiveException, UserNotFoundException
 	@PostMapping("/change-password")
-	@RecentLoginRequired(maxAgeSeconds = 300)  // optional: require recent login
+	// Check that the user’s JWT token was issued in the last 300 seconds before allowing this method to run.
+	// Added files - RecentLoginRequired custom annotation, RecentLoginAspect aspect, ChangePasswordRequest DTO, UserNotActiveException, UserNotFoundException	
+	@RecentLoginRequired(maxAgeSeconds = 300)	// A custom annotation that triggers the RecentLoginAspect before executing this method. It doesn’t do anything by itself — it’s just metadata  
 	public ResponseEntity<ApiResponse<Void>> changePassword(
 													HttpServletRequest httpServletRequest,
 													HttpServletResponse httpServletResponse,
@@ -99,6 +113,12 @@ public class AuthController {
 		
 	    // Extract CSRF cookie
 		AuthCookies authCookies = CookieUtils.getAuthCookiesLogout(httpServletRequest, cookieProperties);
-	    return authService.changePassword(httpServletRequest, httpServletResponse, authCookies.getCsrfToken(), csrfHeaderValue, authCookies.getRefreshToken(), changePasswordRequest);
+	    return authService.changePassword(
+	    		httpServletRequest, 
+	    		httpServletResponse,
+	    		authCookies.getRefreshToken(), 	    		
+	    		authCookies.getCsrfToken(), 
+	    		csrfHeaderValue, 
+	    		changePasswordRequest);
 	}
 }
