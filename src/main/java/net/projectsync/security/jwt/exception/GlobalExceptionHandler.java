@@ -9,8 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import net.projectsync.security.jwt.util.ApiResponse;
 
@@ -20,7 +20,7 @@ import net.projectsync.security.jwt.util.ApiResponse;
 // If an exception occurs in the filter chain (e.g., invalid JWT, missing token), it never enters the controller. Instead, Spring Security internally triggers either:
 // 	- JwtAuthenticationEntryPoint 	→ for 401 Unauthorized (unauthenticated access)
 //  - JwtAccessDeniedHandler 		→ for 403 Forbidden (authenticated but insufficient privileges)
-@ControllerAdvice
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
 	// ------------------- Custom API exceptions -------------------
