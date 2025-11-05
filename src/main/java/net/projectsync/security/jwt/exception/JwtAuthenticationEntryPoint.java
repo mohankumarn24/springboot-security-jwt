@@ -1,7 +1,6 @@
 package net.projectsync.security.jwt.exception;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.time.Instant;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -26,19 +25,15 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
                          HttpServletResponse response,
                          AuthenticationException authException) throws IOException {
 
-        // Optional logging
         log.warn("Unauthorized access attempt to {}: {}", request.getRequestURI(), authException.getMessage());
-
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
-        ApiResponse<Void> apiResponse = new ApiResponse<>("JwtAuthenticationEntryPoint Handler: " + authException.getMessage(), Instant.now(), null);
-
-        // response.getWriter().write(objectMapper.writeValueAsString(apiResponse));
-        try (PrintWriter writer = response.getWriter()) {
-            writer.write(objectMapper.writeValueAsString(apiResponse));
-            writer.flush();
-        }
+        ApiResponse<Void> apiResponse = new ApiResponse<>(
+        		"JwtAuthenticationEntryPoint Handler: " + authException.getMessage(), 
+        		Instant.now(), 
+        		null);
+        response.getWriter().write(objectMapper.writeValueAsString(apiResponse));
     }
 }

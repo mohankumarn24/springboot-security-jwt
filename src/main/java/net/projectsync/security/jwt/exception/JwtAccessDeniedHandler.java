@@ -1,7 +1,6 @@
 package net.projectsync.security.jwt.exception;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.time.Instant;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -32,19 +31,16 @@ public class JwtAccessDeniedHandler implements AccessDeniedHandler {
                        HttpServletResponse response,
                        AccessDeniedException accessDeniedException) throws IOException, ServletException {
 
-        // Optional logging
         log.warn("Access denied to {} by user {}: {}", request.getRequestURI(), request.getUserPrincipal(), accessDeniedException.getMessage());
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");					// Otherwise some clients might misinterpret non-ASCII characters.
         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
 
-        ApiResponse<Void> apiResponse = new ApiResponse<>("AccessDeniedHandler: " + accessDeniedException.getMessage(), Instant.now(), null);
-
-        // response.getWriter().write(objectMapper.writeValueAsString(apiResponse));
-        try (PrintWriter writer = response.getWriter()) {					// Returns a PrintWriter to write character data to the HTTP response body. You can only call getWriter() once per response.
-            writer.write(objectMapper.writeValueAsString(apiResponse));		// Writes the JSON string to the response body. Combined with setting the content type, the client receives JSON.
-            writer.flush();
-        }
+        ApiResponse<Void> apiResponse = new ApiResponse<>(
+        		"AccessDeniedHandler: " + accessDeniedException.getMessage(),
+        		Instant.now(), 
+        		null);
+        response.getWriter().write(objectMapper.writeValueAsString(apiResponse));
     }
 }
 

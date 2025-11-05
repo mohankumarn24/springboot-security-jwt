@@ -27,8 +27,8 @@ public class RecentLoginAspect {
     @Value("${jwt.secret}")
     private String jwtSecret;
 
-    @Before("@annotation(recentLogin)")
-    public void checkRecentLogin(RecentLoginRequired recentLogin) {
+    @Before("@annotation(recentLogin)")									// @annotation(recentLogin -> Spring passes the annotation instance to the advice, so you can read maxAgeSeconds() from it
+    public void checkRecentLogin(RecentLoginRequired recentLogin) {		// @Before				   -> This code runs before any method annotated with @RecentLoginRequired
         String token = extractTokenFromRequest();
         if (token == null) {
             throw new UnauthorizedException("Missing access token");

@@ -2,6 +2,7 @@ package net.projectsync.security.jwt.actuators;
 
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +18,7 @@ public class CustomRedisHealthIndicator implements HealthIndicator {
 
     @Override
     public Health health() {
-        try (var connection = redisConnectionFactory.getConnection()) {
+        try (RedisConnection connection = redisConnectionFactory.getConnection()) {
             String pong = connection.ping();
             return Health.up()
                     .withDetail("ping", pong)

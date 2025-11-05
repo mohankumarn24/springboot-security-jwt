@@ -13,9 +13,9 @@ import java.util.List;
 public class CorsConfig {
 
 	/**
-	 * 1️. Spring ***Security CORS*** source (used in SecurityConfig.cors())
+	 * 1️. Spring Security CORS source (used in SecurityConfig.cors())
 	 * 	- This handles secured endpoints (like /api/auth/** or JWT-protected APIs).
-	 *	- You don’t need the inline cors() lambda in SecurityConfig if you have the bean — your approach is cleaner.
+	 *	- You don’t need the inline cors() lambda in SecurityConfig if you have the bean CorsConfigurationSource
 	 * 	- WebMvcConfigurer → handles everything else globally
 	 */
     @Bean
@@ -47,7 +47,7 @@ public class CorsConfig {
 
     // 
     /**
-     * 2️. Optional: global ***Spring MVC*** CORS (for non-secured endpoints)
+     * 2️. Optional: global 'Spring MVC' CORS (for non-secured endpoints)
      * - Handles all endpoints outside of Spring Security, like Actuator endpoints (/actuator/**) or static resources.
      * - /actuator/** will now support CORS because of the WebMvcConfigurer.
      * - @CrossOrigin -> Only for specific controller/method
