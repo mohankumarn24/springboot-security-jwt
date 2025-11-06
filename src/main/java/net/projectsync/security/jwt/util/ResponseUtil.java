@@ -10,6 +10,7 @@ public class ResponseUtil {
 
     public static <T> ResponseEntity<ApiResponse<T>> buildResponse(String message, T data, HttpStatus httpStatus) {
         ApiResponse<T> response = new ApiResponse<>(message, Instant.now(), data);
+        // return new ResponseEntity<ApiResponse<T>>(response, httpStatus);
         return ResponseEntity.status(httpStatus.value()).body(response);
     }
 }
