@@ -9,9 +9,32 @@ import net.projectsync.security.jwt.exception.UnauthorizedException;
 
 public final class CookieUtils {
 
+	// prevent instantiation of utils class object
 	private CookieUtils() {
 	}
 
+	// @Data
+	// @AllArgsConstructor
+	public static class AuthCookies {
+		
+		private final String refreshToken;
+		private final String csrfToken;
+
+		public AuthCookies(String refreshToken, String csrfToken) {
+			this.refreshToken = refreshToken;
+			this.csrfToken = csrfToken;
+		}
+
+		public String getRefreshToken() { return refreshToken; }
+		public String getCsrfToken() { return csrfToken; }
+	}
+	
+	public static AuthCookies getAuthCookies(HttpServletRequest httpServletRequest, CookieProperties cookieProperties) {
+		String refreshToken = getAuthCookieValue(httpServletRequest, cookieProperties.getRefresh().getName());
+		String csrfToken = getAuthCookieValue(httpServletRequest, cookieProperties.getCsrf().getName());
+		return new AuthCookies(refreshToken, csrfToken);
+	}
+	
 	// Convenience method for auth cookies (refresh token, CSRF)
 	public static String getAuthCookieValue(HttpServletRequest httpServletRequest, String cookieName) {
 		return getCookieValue(httpServletRequest, cookieName, true);
@@ -56,14 +79,6 @@ public final class CookieUtils {
 		throw new BadRequestException("Required cookie '" + cookieName + "' not found");
 	}
 
-	public static AuthCookies getAuthCookies(HttpServletRequest httpServletRequest, CookieProperties cookieProperties) {
-		
-		String refreshToken = getAuthCookieValue(httpServletRequest, cookieProperties.getRefresh().getName());
-		String csrfToken = getAuthCookieValue(httpServletRequest, cookieProperties.getCsrf().getName());
-		
-		return new AuthCookies(refreshToken, csrfToken);
-	}
-
 	// added to avoid 'User already log'
 	public static AuthCookies getAuthCookiesLogout(HttpServletRequest request, CookieProperties cookieProperties) {
 		
@@ -82,27 +97,6 @@ public final class CookieUtils {
 	    }
 
 	    return new AuthCookies(refreshToken, csrfToken);
-	}
-
-	
-	/** JDK 11 compatible inner class to hold auth cookies */
-	public static class AuthCookies {
-		
-		private final String refreshToken;
-		private final String csrfToken;
-
-		public AuthCookies(String refreshToken, String csrfToken) {
-			this.refreshToken = refreshToken;
-			this.csrfToken = csrfToken;
-		}
-
-		public String getRefreshToken() {
-			return refreshToken;
-		}
-
-		public String getCsrfToken() {
-			return csrfToken;
-		}
 	}
 	
 	/* 

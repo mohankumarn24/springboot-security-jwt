@@ -119,7 +119,8 @@ public class JwtService {
     }
 
     private boolean isTokenExpired(String token) {
-        return extractClaim(token, Claims::getExpiration).before(new Date());
+    	// return extractAllClaims(token).getExpiration().before(new Date());
+        return extractClaim(token, Claims::getExpiration).before(new Date());	// claims -> claims.getExpiration()
     }
 
 	public String extractUsernameFromAuthHeader(HttpServletRequest httpServletRequest) {
