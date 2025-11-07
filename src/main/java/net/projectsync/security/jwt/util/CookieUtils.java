@@ -13,7 +13,7 @@ public final class CookieUtils {
 	private CookieUtils() {
 	}
 
-	// @Data
+	// @Getter
 	// @AllArgsConstructor
 	public static class AuthCookies {
 		
@@ -51,18 +51,18 @@ public final class CookieUtils {
 	 * 	- Throws BadRequestException if request has no cookies at all
 	 *  - Throws UnauthorizedException if the requested cookie is missing or empty (auth-related use-case).
 	 */
-	public static String getCookieValue(HttpServletRequest httpServletRequest, String cookieName,
-			boolean isAuthCookie) {
-
-		if (httpServletRequest.getCookies() == null || httpServletRequest.getCookies().length == 0) {
+	public static String getCookieValue(HttpServletRequest httpServletRequest, String cookieName, boolean isAuthCookie) {
+		Cookie[] cookies = httpServletRequest.getCookies();
+		if (cookies == null || cookies.length == 0) {
 			if (isAuthCookie) {
-				throw new UnauthorizedException("Authentication cookies not found");	// if user hits '/logout' twice, throws 'Authentication cookies not found' instead of 'User already logged out'. Use 'getAuthCookiesLogout()'
+				// if user hits '/logout' twice, throws 'Authentication cookies not found' instead of 'User already logged out'. Use 'getAuthCookiesLogout()'
+				throw new UnauthorizedException("Authentication cookies not found");
 			}
 			throw new BadRequestException("No cookies found in request");
 		}
 
-		for (Cookie cookie : httpServletRequest.getCookies()) {
-			if (cookieName.equals(cookie.getName())) {
+		for (Cookie cookie : cookies) {
+			if (cookie.getName().equals(cookieName)) {
 				if (cookie.getValue() == null || cookie.getValue().isBlank()) {
 					if (isAuthCookie) {
 						throw new UnauthorizedException("Authentication cookie '" + cookieName + "' is empty");
