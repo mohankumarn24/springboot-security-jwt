@@ -60,11 +60,24 @@ public class JacksonConfig {
 	            
 	            // Force ISO-8601 (not timestamps) -> Prevents Jackson from writing dates as numeric timestamps (epoch milliseconds).
 	            // Ensure dates are written as ISO-8601 strings, not numeric timestamps
+	        	// "createdDate": 1699512000000 -> "createdDate": "2025-11-09T14:30:00"
 	        	builder.featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 			}
 		};
     }
 }
+
+/*
+@Bean
+public Jackson2ObjectMapperBuilderCustomizer jacksonCustomizer() {
+    return builder -> {
+        builder.modules(new JavaTimeModule());
+        builder.featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    };
+}
+*/
+
+
 
 /*
 | Feature                 | Custom JsonSerializer (truncate) | InstantSerializer (Jackson)       |
