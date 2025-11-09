@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonInclude(JsonInclude.Include.NON_NULL)		// This will avoid null fields in your API responses
 public class UserDTO {
 
+	// @JsonIgnore  							// hides from JSON serialization
 	@JsonProperty("user_id")
     private Long id;
     private String username;
@@ -27,16 +28,13 @@ public class UserDTO {
     }
 
     // Getters
-    public Long getId() {
-        return id;
-    }
-
+    public Long getId() { return id; }
     public String getUsername() { return username; }
     public String getRole() { return role; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
 
-    // Setters (optional, for mutability). Ot set the fields as 'final'
+    // Setters (optional, for mutability). Or set the fields as 'final'
     public void setId(Long id) { this.id = id; }
     public void setUsername(String username) { this.username = username; }
     public void setRole(String role) { this.role = role; }

@@ -14,9 +14,9 @@ import lombok.extern.slf4j.Slf4j;
 import net.projectsync.security.jwt.util.ApiResponse;
 
 /*
- *  AccessDeniedException does not extend Exception in a way that Spring will route it here for @ControllerAdvice by default in security filters.
- *  By the time Spring Security throws it, it happens before the controller method is entered, inside the security filter chain. 
- *  That means the exception does not go through the controller's normal exception handling. So, handle explicitly
+ * AccessDeniedException occurs within Spring Security's filter chain, before the request reaches any @RestController method.
+ * Because of this, it is not handled by @RestControllerAdvice exception handlers (which only catch exceptions thrown inside controller methods).
+ * Therefore, AccessDeniedException must be handled explicitly. For example, using a custom AccessDeniedHandler in Spring Security configuration.
  */
 @Component
 @RequiredArgsConstructor
@@ -24,16 +24,19 @@ import net.projectsync.security.jwt.util.ApiResponse;
 public class JwtAccessDeniedHandler implements AccessDeniedHandler {
 
     private final ObjectMapper objectMapper;
-
-    // Displays message in responsebody when you dont have authorization to protected endpoint (ex: /api/user/** or /api/admin/**). Ex. Access '/api/admin/**' with 'USER' role
+    
+    // Handles requests where the authenticated user lacks authorization to access a protected endpoint (e.g., accessing `/api/admin/**` with `ROLE_USER`).
     @Override
     public void handle(HttpServletRequest request,
                        HttpServletResponse response,
                        AccessDeniedException accessDeniedException) throws IOException, ServletException {
 
-        log.warn("Access denied to {} by user {}: {}", request.getRequestURI(), request.getUserPrincipal(), accessDeniedException.getMessage());
+        log.warn("Access denied for URI [{}], user [{}]: {}", 
+        		request.getRequestURI(), 
+        		request.getUserPrincipal(), 
+        		accessDeniedException.getMessage());
         response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");					// Otherwise some clients might misinterpret non-ASCII characters.
+        response.setCharacterEncoding("UTF-8");					// Otherwise some clients might misinterpret non-ASCII characters. Ensures correct encoding for non-ASCII characters
         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
 
         ApiResponse<Void> apiResponse = new ApiResponse<>(
@@ -43,4 +46,3 @@ public class JwtAccessDeniedHandler implements AccessDeniedHandler {
         response.getWriter().write(objectMapper.writeValueAsString(apiResponse));
     }
 }
-

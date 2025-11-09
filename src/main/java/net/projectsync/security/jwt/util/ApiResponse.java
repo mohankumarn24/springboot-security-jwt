@@ -1,25 +1,30 @@
 package net.projectsync.security.jwt.util;
 
 import java.time.Instant;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 /**
- * Standard API response wrapper.
- * @param <T> Type of the payload
+ * Generic API response wrapper used for consistent REST responses
+ * @param <T> The type of the data payload (can be null).
  */
+// @JsonInclude(JsonInclude.Include.NON_NULL) // Skip null fields in JSON
 public class ApiResponse<T> {
 
-	// Made fields final → encourages immutability (good practice for DTOs).
+	// A human-readable message describing the outcome. Made fields 'final' → encourages immutability (good practice for DTOs).
     private final String message;
     
     // Serialize as ISO-8601 string
     private final Instant timestamp;
     // private final OffsetDateTime  timestamp; 
     
-    // ApiResponse<String> response = new ApiResponse<>("Logged out", Instant.now(), null);	// T is String (compile-time type).
-    // 'data' can be null; T exists at compile-time, appears as "data": null in JSON, no validation needed.
-    private final T data; // optional payload
+    /*
+     * - Optional response payload
+     * - ApiResponse<String> response = new ApiResponse<>("Logged out", Instant.now(), null);	// T is String (compile-time type).
+     * - 'data' can be null; T exists at compile-time, appears as "data": null in JSON, no validation needed.
+     */
+    private final T data;
 
-    // Constructor
+    // Creates a new immutable ApiResponse
     public ApiResponse(String message, Instant timestamp, T data) {
         this.message = message;
         this.timestamp = timestamp;

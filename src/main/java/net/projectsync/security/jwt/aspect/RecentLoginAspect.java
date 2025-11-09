@@ -48,9 +48,9 @@ public class RecentLoginAspect {
     }
 
     private String extractTokenFromRequest() {
-        String bearer = httpServletRequest.getHeader("Authorization");
-        if (bearer != null && bearer.startsWith("Bearer ")) {
-            return bearer.substring(7);
+        String authHeader = httpServletRequest.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            return authHeader.substring(7);
         }
         return null;
     }
