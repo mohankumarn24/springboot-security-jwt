@@ -90,7 +90,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
         
         // 2️. Extract Bearer token from Authorization header
-        String authHeader = request.getHeader("Authorization");
+        String authHeader = request.getHeader("Authorization");	// any exception inside this method will throw 'InvalidJwtTokenException' which extends 'UnauthorizedException'
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7); // remove "Bearer " prefix
 

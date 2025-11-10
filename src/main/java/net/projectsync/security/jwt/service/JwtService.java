@@ -71,7 +71,7 @@ public class JwtService {
                     .parseClaimsJws(token)
                     .getBody();
 		} catch (ExpiredJwtException e) {
-			throw new InvalidJwtTokenException("Access token expired", e);
+			throw new InvalidJwtTokenException("Access token expired", e);	// InvalidJwtTokenException() extends UnauthorizedException()
 		} catch (MalformedJwtException e) {
 			throw new InvalidJwtTokenException("Invalid token", e);
 		} catch (SignatureException e) {
