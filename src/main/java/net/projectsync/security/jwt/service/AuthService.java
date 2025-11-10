@@ -44,7 +44,7 @@ public class AuthService {
     
 	// added to verify if properties are loaded correctly
 	@PostConstruct
-	public void checkCookies() {
+	public void printCookieNames() {
 	    System.out.println("[AuthService] Refresh Cookie: " + cookieProperties.getRefresh().getName());
 	    System.out.println("[AuthService] CSRF Cookie: " + cookieProperties.getCsrf().getName());
 	}

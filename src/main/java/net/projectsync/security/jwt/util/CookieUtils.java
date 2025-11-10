@@ -1,5 +1,8 @@
 package net.projectsync.security.jwt.util;
 
+import java.util.Arrays;
+import java.util.Optional;
+
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseCookie;
@@ -9,7 +12,7 @@ import net.projectsync.security.jwt.exception.UnauthorizedException;
 
 public final class CookieUtils {
 
-	// prevent instantiation of utils class object
+	// Prevent instantiation
 	private CookieUtils() {
 	}
 
@@ -27,6 +30,11 @@ public final class CookieUtils {
 
 		public String getRefreshToken() { return refreshToken; }
 		public String getCsrfToken() { return csrfToken; }
+		
+        @Override
+        public String toString() {
+            return "AuthCookies{refreshToken=****, csrfToken=****}";
+        }
 	}
 	
 	public static AuthCookies getAuthCookies(HttpServletRequest httpServletRequest, CookieProperties cookieProperties) {
@@ -51,54 +59,51 @@ public final class CookieUtils {
 	 * 	- Throws BadRequestException if request has no cookies at all
 	 *  - Throws UnauthorizedException if the requested cookie is missing or empty (auth-related use-case).
 	 */
-	public static String getCookieValue(HttpServletRequest httpServletRequest, String cookieName, boolean isAuthCookie) {
-		Cookie[] cookies = httpServletRequest.getCookies();
-		if (cookies == null || cookies.length == 0) {
-			if (isAuthCookie) {
-				// if user hits '/logout' twice, throws 'Authentication cookies not found' instead of 'User already logged out'. Use 'getAuthCookiesLogout()'
-				throw new UnauthorizedException("Authentication cookies not found");
-			}
-			throw new BadRequestException("No cookies found in request");
-		}
-
-		for (Cookie cookie : cookies) {
-			if (cookie.getName().equals(cookieName)) {
-				if (cookie.getValue() == null || cookie.getValue().isBlank()) {
-					if (isAuthCookie) {
-						throw new UnauthorizedException("Authentication cookie '" + cookieName + "' is empty");
-					}
-					throw new BadRequestException("Cookie '" + cookieName + "' is empty");
-				}
-				return cookie.getValue();
-			}
-		}
-
-		if (isAuthCookie) {
-			throw new UnauthorizedException("Required authentication cookie '" + cookieName + "' not found");
-		}
-		throw new BadRequestException("Required cookie '" + cookieName + "' not found");
-	}
-
-	// added to avoid 'User already log'
-	public static AuthCookies getAuthCookiesLogout(HttpServletRequest request, CookieProperties cookieProperties) {
+	public static String getCookieValue(HttpServletRequest request, String cookieName, boolean isAuthCookie) {
 		
-	    String refreshToken = null;
-	    String csrfToken = null;
+    	/*
+    	Optional<Cookie[]> cookies = Optional.ofNullable(request.getCookies());
+    	Cookie[] cookies = Optional.ofNullable(request.getCookies()).orElseThrow(() -> new RuntimeException());
+    	*/
+		
+	    Cookie[] cookies = Optional.ofNullable(request.getCookies())
+	            .orElseThrow(() -> isAuthCookie
+	                    ? new UnauthorizedException("Authentication cookies not found")
+	                    : new BadRequestException("No cookies found in request"));
 
-	    Cookie[] cookies = request.getCookies();
-	    if (cookies != null) {
-	        for (Cookie cookie : cookies) {
-	            if (cookie.getName().equals(cookieProperties.getRefresh().getName())) {
-	                refreshToken = cookie.getValue();
-	            } else if (cookie.getName().equals(cookieProperties.getCsrf().getName())) {
-	                csrfToken = cookie.getValue();
-	            }
-	        }
-	    }
-
-	    return new AuthCookies(refreshToken, csrfToken);
+	    return Arrays.stream(cookies)
+	            .filter(cookie -> cookie.getName().equals(cookieName))
+	            .map(Cookie::getValue)
+	            .filter(value -> value != null && !value.isBlank())
+	            .findFirst()
+	            .orElseThrow(() -> isAuthCookie
+	                    ? new UnauthorizedException("Authentication cookie '" + cookieName + "' is missing or empty")
+	                    : new BadRequestException("Cookie '" + cookieName + "' is missing or empty"));
 	}
-	
+
+
+	// added to avoid 'User already logged out'
+	public static AuthCookies getAuthCookiesLogout(HttpServletRequest request, CookieProperties cookieProperties) {
+        Cookie[] cookies = Optional.ofNullable(request.getCookies())
+                .orElseThrow(() -> new BadRequestException("No cookies present in the request"));
+
+        String refreshToken = Arrays.stream(cookies)
+                .filter(cookie -> cookie.getName().equals(cookieProperties.getRefresh().getName()))
+                .map(Cookie::getValue)
+                .filter(value -> value != null && !value.isBlank())
+                .findFirst()
+                .orElseThrow(() -> new BadRequestException("Refresh token cookie not found or empty during logout"));
+
+        String csrfToken = Arrays.stream(cookies)
+                .filter(c -> c.getName().equals(cookieProperties.getCsrf().getName()))
+                .map(Cookie::getValue)
+                .filter(value -> value != null && !value.isBlank())
+                .findFirst()
+                .orElseThrow(() -> new BadRequestException("CSRF token cookie not found or empty during logout"));
+
+        return new AuthCookies(refreshToken, csrfToken);
+	}
+
 	/* 
 	 * Create a ResponseCookie with standard settings
 	 * 
@@ -131,4 +136,53 @@ public final class CookieUtils {
     			.maxAge(0)
     			.build();
     }
+    
+	@Deprecated(since = "2.0", forRemoval = true)
+	public static String getCookieValueDeprecated(HttpServletRequest httpServletRequest, String cookieName, boolean isAuthCookie) {
+		Cookie[] cookies = httpServletRequest.getCookies();
+		if (cookies == null || cookies.length == 0) {
+			if (isAuthCookie) {
+				// if user hits '/logout' twice, throws 'Authentication cookies not found' instead of 'User already logged out'. Use 'getAuthCookiesLogout()'
+				throw new UnauthorizedException("Authentication cookies not found");
+			}
+			throw new BadRequestException("No cookies present in the request");
+		}
+
+		for (Cookie cookie : cookies) {
+			if (cookie.getName().equals(cookieName)) {
+				if (cookie.getValue() == null || cookie.getValue().isBlank()) {
+					if (isAuthCookie) {
+						throw new UnauthorizedException("Authentication cookie '" + cookieName + "' is empty");
+					}
+					throw new BadRequestException("Cookie '" + cookieName + "' is empty");
+				}
+				return cookie.getValue();
+			}
+		}
+
+		if (isAuthCookie) {
+			throw new UnauthorizedException("Required authentication cookie '" + cookieName + "' not found");
+		}
+		throw new BadRequestException("Required cookie '" + cookieName + "' not found");
+	}
+	
+	@Deprecated(since = "2.0", forRemoval = true)
+	public static AuthCookies getAuthCookiesLogoutDeprecated(HttpServletRequest request, CookieProperties cookieProperties) {
+		
+	    String refreshToken = null;
+	    String csrfToken = null;
+
+	    Cookie[] cookies = request.getCookies();
+	    if (cookies != null) {
+	        for (Cookie cookie : cookies) {
+	            if (cookie.getName().equals(cookieProperties.getRefresh().getName())) {
+	                refreshToken = cookie.getValue();
+	            } else if (cookie.getName().equals(cookieProperties.getCsrf().getName())) {
+	                csrfToken = cookie.getValue();
+	            }
+	        }
+	    }
+
+	    return new AuthCookies(refreshToken, csrfToken);
+	}
 }

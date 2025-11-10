@@ -42,7 +42,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     FilterChain chain) throws ServletException, IOException {
 
         // 1️. Skip authentication for '/api/auth/**' endpoints (signup, signin, refresh, logout)
-        String path = request.getServletPath();
+    	// http://localhost:8080/projectsync/api/auth/signin?debug=true -> getServletPath -> /api/auth/signin
+    	// http://localhost:8080/projectsync/api/auth/signin?debug=true -> getRequestURI  -> /projectsync/api/auth/signin
+    	String path = request.getServletPath();
         if (path.startsWith("/api/auth/")) {
             chain.doFilter(request, response);
             return;
@@ -69,8 +71,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 		 *   -- Use a CSRF token (Double Submit Cookie pattern)	(The JS reads a CSRF token (not HttpOnly) and sends it in a header. Backend validates it.)
 		 *   -- JWT Authorization header (recommended for SPAs) (Store access tokens in memory, send via Authorization: Bearer <token>. Browser cannot automatically attach tokens cross-site, so CSRF risk is gone.)
          */
-        // origin == null → allow request (Postman, curl, same-site GET)
-        String origin = request.getHeader("Origin");	// added by browser automatically
+        // - Added by browser automatically. Browser enforces CORS
+        // - Postman -> Not a browser; no CORS context. So, value is null
+        String origin = request.getHeader("Origin");
         if (origin != null && !TRUSTED_ORIGIN.equals(origin)) {
         	// reject cross-site requests from unknown origins
             log.warn("Blocked request with invalid origin: {}", origin);
