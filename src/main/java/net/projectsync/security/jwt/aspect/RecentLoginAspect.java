@@ -39,10 +39,10 @@ public class RecentLoginAspect {
                             .parseClaimsJws(token)
                             .getBody();
 
-        Date issuedAt = claims.getIssuedAt();
+        Instant issuedAt = claims.getIssuedAt().toInstant();
         Instant allowedTime = Instant.now().minusSeconds(recentLogin.maxAgeSeconds());
 
-        if (issuedAt.toInstant().isBefore(allowedTime)) {
+        if (issuedAt.isBefore(allowedTime)) {
             throw new ForbiddenException("Token already expired/Invalid token");
         }
     }
