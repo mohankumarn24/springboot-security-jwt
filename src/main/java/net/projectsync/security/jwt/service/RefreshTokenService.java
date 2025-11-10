@@ -1,12 +1,11 @@
 package net.projectsync.security.jwt.service;
 
-import java.util.Collections;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-import lombok.RequiredArgsConstructor;
+import java.time.Instant;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -17,71 +16,131 @@ public class RefreshTokenService {
     // TTL for refresh tokens in seconds (7 days)
     private static final long REFRESH_TOKEN_TTL = 7 * 24 * 60 * 60;
 
-    // Save a refresh token for a user 
-    public void saveRefreshToken(String token, String username) {
-        // 1. Save token -> username with TTL (token123 → sachin)
-        redisTemplate.opsForValue().set(token, username, REFRESH_TOKEN_TTL, TimeUnit.SECONDS);
+    private static final String TOKEN_KEY_PREFIX = "value_token:";				// use "token:"
+    private static final String USER_KEY_PREFIX = "set_username:";				// use "username:"
+    private static final String METADATA_KEY_PREFIX = "map_metadata:";			// use "metadata:"
 
-        // 2. Add token to user's set (username:sachin → {token123, token456})
-        String key = "username:" + username;
-        redisTemplate.opsForSet().add(key, token);
-        redisTemplate.expire(key, REFRESH_TOKEN_TTL, TimeUnit.SECONDS);	// Apply TTL to a Redis key.
+    // Save a refresh token for a user with metadata (device, ip, issuedAt)
+    public void saveRefreshToken(String token, String username, String deviceInfo, String ipAddress) {
+        if (token == null || username == null) return;
+
+        String tokenKey = TOKEN_KEY_PREFIX + token;
+        String userKey = USER_KEY_PREFIX + username;
+        String metadataKey = METADATA_KEY_PREFIX + username + ":" + token;
+
+        // 1️. Token → Username mapping
+        redisTemplate.opsForValue().set(tokenKey, username, REFRESH_TOKEN_TTL, TimeUnit.SECONDS);
+
+        // 2️. Username → { Tokens }
+        redisTemplate.opsForSet().add(userKey, tokenKey);
+        redisTemplate.expire(userKey, REFRESH_TOKEN_TTL, TimeUnit.SECONDS);
+
+        // 3️. Metadata (stored as string key-value pairs)
+        Map<String, String> metadata = new HashMap<>();
+        metadata.put("issuedAt", Instant.now().toString());
+        metadata.put("device", deviceInfo);
+        metadata.put("ip", ipAddress);
+
+        redisTemplate.opsForHash().putAll(metadataKey, metadata);
+        redisTemplate.expire(metadataKey, REFRESH_TOKEN_TTL, TimeUnit.SECONDS);
     }
 
-    // Revoke a single token for the user (in user set username:sachin as well as token123 -> sachin) during token refresh
+    // Overloaded version (without device/IP)
+    public void saveRefreshToken(String token, String username) {
+        saveRefreshToken(token, username, "unknown-device", "unknown-ip");
+    }
+
+    // Revoke a single refresh token
     public void revokeSingleRefreshToken(String token) {
-        String username = redisTemplate.opsForValue().get(token);
+        if (token == null) return;
+
+        String tokenKey = TOKEN_KEY_PREFIX + token;
+        String username = redisTemplate.opsForValue().get(tokenKey);
         if (username == null) return;
 
-        // remove token
-        redisTemplate.delete(token);					// remove token123 → sachin
-        
-        // remove from set (remove token123 from set username:sachin → {token123, token456})
-        String key = "username:" + username;
-        redisTemplate.opsForSet().remove(key, token);	// result: username:sachin → {token456}
+        // Remove token → username
+        redisTemplate.delete(tokenKey);
+
+        // Remove from user’s set
+        String userKey = USER_KEY_PREFIX + username;
+        redisTemplate.opsForSet().remove(userKey, tokenKey);
+
+        // Remove metadata
+        String metadataKey = METADATA_KEY_PREFIX + username + ":" + token;
+        redisTemplate.delete(metadataKey);
     }
 
-    // Revoke all refresh tokens for the user (in user set username:sachin as well as token123 -> sachin) during logout
+    // Revoke all refresh tokens for a user
     public void revokeAllRefreshTokensForUser(String username) {
-    	String key = "username:" + username;
-    	// 1. Fetch all tokens for the user 'sachin' from set
-        // Optional<Set<String>> tokensOpt = Optional.ofNullable(redisTemplate.opsForSet().members(key));
-    	Set<String> tokens = Optional.ofNullable(redisTemplate.opsForSet().members(key)).orElse(Collections.emptySet()); // username:sachin → {token123, token456}
+        if (username == null) return;
 
-        if (!tokens.isEmpty()) {
-            /* delete tokens individually
-        	for (String token : tokens) {
-                redisTemplate.delete(token); // delete each individual token
-            }
-            */
-        	// or Bulk delete tokens as below
-        	// 2. Delete each token for user 'sachin'. Here we have only one token for username=sachin. So, deletes token123 → sachin
-            redisTemplate.delete(tokens);	// here we have only one token for username=sachin. So, deletes token123 → sachin
-            
-            // 3. Delete the individual token keys (token123, token456) for key 'username:sachin'. If set is empty, it deletes the parent set itself (username)
-            redisTemplate.delete(key);
+        String userKey = USER_KEY_PREFIX + username;
+        Set<String> tokenKeys = Optional.ofNullable(redisTemplate.opsForSet().members(userKey)).orElse(Collections.emptySet());
+        if (tokenKeys.isEmpty()) return;
+
+        for (String tokenKey : tokenKeys) {
+            String token = tokenKey.replace(TOKEN_KEY_PREFIX, "");
+            redisTemplate.delete(tokenKey);
+            redisTemplate.delete(METADATA_KEY_PREFIX + username + ":" + token);
         }
-        /**
-         * - If you just delete the set (username:sachin), the set itself is gone, but the individual token keys (token123, token456) still exist in Redis.
-         * - Those tokens would still be considered valid if you check redisTemplate.hasKey(token123).
-         */
+
+        redisTemplate.delete(userKey);
     }
 
-    // Get username for a given refresh token.
-    public Optional<String> getUsernameForRefreshToken(String refreshToken) {
-        String username = redisTemplate.opsForValue().get(refreshToken);
+    // Get metadata for a specific token
+    public Map<Object, Object> getTokenMetadata(String username, String token) {
+        if (username == null || token == null) return Collections.emptyMap();
+        String metadataKey = METADATA_KEY_PREFIX + username + ":" + token;
+        return redisTemplate.opsForHash().entries(metadataKey);
+    }
+
+    // Get username for a given refresh token
+    public Optional<String> getUsernameForRefreshToken(String token) {
+        if (token == null) return Optional.empty();
+        String tokenKey = TOKEN_KEY_PREFIX + token;
+        String username = redisTemplate.opsForValue().get(tokenKey);
         return Optional.ofNullable(username);
     }
 
-    // Check if the user has any active tokens.
+    // Check if user has active tokens
     public boolean hasActiveRefreshTokens(String username) {
-    	String key = "username:" + username;
-        Set<String> tokens = Optional.ofNullable(redisTemplate.opsForSet().members(key)).orElse(Collections.emptySet());
+        if (username == null) return false;
+        String userKey = USER_KEY_PREFIX + username;
+        Set<String> tokens = Optional.ofNullable(redisTemplate.opsForSet().members(userKey)).orElse(Collections.emptySet());
         return !tokens.isEmpty();
     }
-    
-    // Check if a refresh token is valid (exists in Redis).
+
+    // Check if a refresh token is valid (exists)
     public boolean isValidRefreshToken(String token) {
-    	return redisTemplate.hasKey(token);
+        if (token == null) return false;
+        String tokenKey = TOKEN_KEY_PREFIX + token;
+        return Boolean.TRUE.equals(redisTemplate.hasKey(tokenKey));
     }
 }
+
+
+/*
+1. Redis After First Login (From Laptop):
+| **Key**                       | **Type** | **Value**                                                                                  |
+| ----------------------------- | -------- | ------------------------------------------------------------------------------------------ |
+| `value_token:token123`        | String   | `"mohan"`                                                                                  |
+| `set_username:mohan`          | Set      | `{ "value_token:token123" }`                                                               |
+| `map_metadata:mohan:token123` | Hash     | `issuedAt = 2025-11-10T20:25:12Z`<br>`device = Windows 11 - Chrome`<br>`ip = 192.168.1.12` |
+
+
+2. Redis After Second Login (From Mobile):
+| **Key**                       | **Type** | **Value**                                                                                  |
+| ----------------------------- | -------- | ------------------------------------------------------------------------------------------ |
+| `value_token:token123`        | String   | `"mohan"`                                                                                  |
+| `value_token:token456`        | String   | `"mohan"`                                                                                  |
+| `set_username:mohan`          | Set      | `{ "value_token:token123", "value_token:token456" }`                                       |
+| `map_metadata:mohan:token123` | Hash     | `issuedAt = 2025-11-10T20:25:12Z`<br>`device = Windows 11 - Chrome`<br>`ip = 192.168.1.12` |
+| `map_metadata:mohan:token456` | Hash     | `issuedAt = 2025-11-10T20:30:55Z`<br>`device = Android - Firefox`<br>`ip = 192.168.1.25`   |
+
+3. When Mohan Logs Out from Laptop:
+| **Key**                       | **Type** | **Value**                                                                                |
+| ----------------------------- | -------- | ---------------------------------------------------------------------------------------- |
+| `value_token:token456`        | String   | `"mohan"`                                                                                |
+| `set_username:mohan`          | Set      | `{ "value_token:token456" }`                                                             |
+| `map_metadata:mohan:token456` | Hash     | `issuedAt = 2025-11-10T20:30:55Z`<br>`device = Android - Firefox`<br>`ip = 192.168.1.25` |
+*/

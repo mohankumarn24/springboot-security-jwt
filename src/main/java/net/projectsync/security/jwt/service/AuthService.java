@@ -98,7 +98,9 @@ public class AuthService {
         String refreshToken = jwtService.generateRefreshToken(user.getUsername());
 
         // 4️. Store refresh token in Redis with TTL matching cookie
-        refreshTokenService.saveRefreshToken(refreshToken, user.getUsername());
+        String deviceInfo = httpServletRequest.getHeader("User-Agent");   // e.g. "Mozilla/5.0 (Windows 10)"
+        String ipAddress = httpServletRequest.getRemoteAddr();            // e.g. "192.168.1.12"
+        refreshTokenService.saveRefreshToken(refreshToken, user.getUsername(), deviceInfo, ipAddress);
 
         // 5️. Set refresh token as HttpOnly, Secure, SameSite cookie
         // ResponseCookie refreshCookie = CookieUtils.createCookie(cookieProperties.getRefresh(), refreshToken, true, true, "Strict");
@@ -185,7 +187,9 @@ public class AuthService {
         String newRefreshToken = jwtService.generateRefreshToken(username);
 
         // 7. Store new refresh token in Redis with expiry
-        refreshTokenService.saveRefreshToken(newRefreshToken, username);
+        String deviceInfo = httpServletRequest.getHeader("User-Agent");   // e.g. "Mozilla/5.0 (Windows 10)"
+        String ipAddress = httpServletRequest.getRemoteAddr();            // e.g. "192.168.1.12"
+        refreshTokenService.saveRefreshToken(newRefreshToken, username, deviceInfo, ipAddress);
 
         // 8️. Set new refresh token in HttpOnly, Secure, SameSite cookie
         // ResponseCookie refreshCookie = CookieUtils.createCookie(cookieProperties.getRefresh(), newRefreshToken, true, true, "Strict");
