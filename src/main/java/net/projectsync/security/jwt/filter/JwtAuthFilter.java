@@ -46,7 +46,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     	// http://localhost:8080/projectsync/api/auth/signin?debug=true -> getRequestURI  -> /projectsync/api/auth/signin
     	String path = request.getServletPath();
         if (path.startsWith("/api/auth/")) {
-            chain.doFilter(request, response);
+            chain.doFilter(request, response);	// passes the request down to the next filter in the Spring Security filter chain
             return;
         }
 

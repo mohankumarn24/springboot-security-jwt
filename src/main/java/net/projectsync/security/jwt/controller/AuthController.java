@@ -69,7 +69,7 @@ public class AuthController {
 													// @CookieValue(name = REFRESH_COOKIE_NAME, required = false) String oldRefreshToken,
 													// @CookieValue(name = CSRF_COOKIE_NAME, required = false) String csrfCookieValue,
 													// @RequestParam @Min(1) @Max(100) int version, 	// @Validated triggers validation on request params ie., /api/auth/refresh?version=0
-													@RequestHeader(value = "X-XSRF-TOKEN", required = false) String csrfHeaderValue) {
+													@RequestHeader(value = "X-XSRF-TOKEN", required = true) String csrfHeaderValue) {
 
 		AuthCookies authCookies = CookieUtils.getAuthCookies(httpServletRequest, cookieProperties);
 		return authService.refresh(
@@ -87,7 +87,7 @@ public class AuthController {
 													// @CookieValue(name = REFRESH_COOKIE_NAME, required = false) String refreshToken,
 													// @CookieValue(name = CSRF_COOKIE_NAME, required = false) String csrfCookieValue,
 													// @RequestParam @NotBlank String reason), // validate non-blank parameter
-													@RequestHeader(value = "X-XSRF-TOKEN", required = false) String csrfHeaderValue) {
+													@RequestHeader(value = "X-XSRF-TOKEN", required = true) String csrfHeaderValue) {
 
 		// AuthCookies authCookies = CookieUtils.getAuthCookies(httpServletRequest, cookieProperties);		// if user hits '/logout' twice, throws 'Authentication cookies not found' instead of 'User already logged out'. Use 'getAuthCookiesLogout()'
 		AuthCookies authCookies = CookieUtils.getAuthCookiesLogout(httpServletRequest, cookieProperties);
@@ -107,7 +107,7 @@ public class AuthController {
 													HttpServletRequest httpServletRequest,
 													HttpServletResponse httpServletResponse,
 													@Valid @RequestBody ChangePasswordRequest changePasswordRequest,
-											        @RequestHeader(value = "X-XSRF-TOKEN", required = false) String csrfHeaderValue) {
+											        @RequestHeader(value = "X-XSRF-TOKEN", required = true) String csrfHeaderValue) {
 		
 	    // Extract CSRF cookie
 		AuthCookies authCookies = CookieUtils.getAuthCookiesLogout(httpServletRequest, cookieProperties);

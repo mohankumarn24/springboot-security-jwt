@@ -9,16 +9,26 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import java.util.List;
 
+/**
+ * CORS Configuration Guidelines:
+ * - Use only CorsConfigurationSource → when all endpoints (public + protected) go through Spring Security.
+ * - Use only WebMvcConfigurer → when your app doesn’t use Spring Security at all.
+ * - Use both → only if you have a mix: some endpoints secured (via Spring Security) 
+ * 				and others completely outside the security filter chain (e.g., static resources or /public/**).
+ */
 @Configuration
 public class CorsConfig {
 
-	/**
-	 * 1️. Spring Security CORS source (used in SecurityConfig.cors())
-	 * 	- This handles secured endpoints (like /api/auth/** or JWT-protected APIs).
-	 *	- You don’t need the inline cors() lambda in SecurityConfig if you have the bean CorsConfigurationSource
-	 * 	- WebMvcConfigurer → handles everything else globally
-	 *  - Used by Spring Security — applies to all routes that go through the SecurityFilterChain
-	 */
+
+    /**
+     * CorsConfigurationSource
+     * - Used by Spring Security to handle CORS for endpoints that pass through the SecurityFilterChain.
+     * - Use this when all your API endpoints are protected by Spring Security (e.g., /api/**).
+     * - Sufficient for most backend APIs (like Spring Boot REST APIs called by React or Angular).
+     * - Spring Security automatically handles CORS and preflight (OPTIONS) requests for secured endpoints.
+     * - You do NOT need the inline cors() lambda in SecurityConfig if you have this bean
+     */
+	
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
@@ -33,7 +43,7 @@ public class CorsConfig {
     }
     
     /*
-			// If you don't need above CorsConfigurationSource bean, then you simply add below lines in SecurityConfig() and remove above method. Use any one approach
+			// Alternate inline option (if you don’t define the CorsConfigurationSource bean)
 			
 			http
 		        .cors(cors -> cors.configurationSource(request -> {
@@ -46,19 +56,26 @@ public class CorsConfig {
 		        }))
      */
 
-    // 
-    /**
-     * 2️. Optional: global 'Spring MVC' CORS (for non-secured endpoints)
-     * - Handles all endpoints outside of Spring Security, like Actuator endpoints (/actuator/**) or static resources.
-     * - /actuator/** will now support CORS because of the WebMvcConfigurer.
-     * - @CrossOrigin -> Only for specific controller/method
-     * - Preflight requests (OPTIONS) are properly handled for secured routes
-     * 
-     * - See: OneNote
-     * - Preflight Request: A preflight request is an automatic “check” the browser performs before sending a real cross-origin HTTP request, to ensure the server allows it.
-     * - Preflight = browser asking the server “Can I make this cross-origin request?” before sending the actual request.
-     * @return
+    /* 
+     * Note:
+     * In SecurityConfig, we have added:
+     *      	.antMatchers("/api/auth/**", "/actuator/**", "/management/**").permitAll()
+     * 	- Even though /actuator/** and /management/** are public, they are still part of the Spring Security filter chain because we declared them in authorizeHttpRequests() with .permitAll()
+     * 	- Spring Security still processes those requests — it just skips authentication. 
+     * 	- Therefore, CORS is still handled by CorsConfigurationSource (not WebMvcConfigurer).
+     *
+     * Use WebMvcConfigurer only if:
+     * 	- Your project has endpoints that completely bypass Spring Security, such as static resources or endpoints excluded from the filter chain (e.g., /public/**).
+     * 	- Or if your project doesn’t use Spring Security at all.
+     *
+     * @CrossOrigin → Use only for very specific controller or method-level CORS.
+     *
+     * Preflight (OPTIONS) requests are automatically handled for secured routes.
+     * See: OneNote
+     * 	- Preflight Request: A preflight request is an automatic “check” the browser performs before sending a real cross-origin HTTP request, to ensure the server allows it.
+     * 	- Preflight = browser asking the server “Can I make this cross-origin request?” before sending the actual request.
      */
+    /*
     @Bean
     public WebMvcConfigurer mvcCorsConfigurer() {
         return new WebMvcConfigurer() {
@@ -72,33 +89,5 @@ public class CorsConfig {
             }
         };
     }
+    */
 }
-
-/*
-Comparison: WebMvcConfigurer vs CorsConfigurationSource
-| Aspect                   | 'WebMvcConfigurer'                                    | 'CorsConfigurationSource'                          |
-| ------------------------ | ----------------------------------------------------- | ---------------------------------------------------|
-| **When to use**          | No Spring Security or simple CORS setup               | Recommended when using Spring Security             |
-| **Applies to**           | Spring MVC layer only                                 | Spring Security + MVC                              |
-| **Integration**          | Needs manual security config if using Spring Security | Automatically picked up by SecurityFilterChain     |
-| **Modern best practice** | Legacy / simple setup                                 | ✅ Preferred for new apps (Spring Boot 2.7+ / 3.x) |
-
-
-
-| Feature                      | `WebMvcConfigurer`             | `CorsConfigurationSource`    |
-| ---------------------------- | ------------------------------ | ---------------------------- |
-| Layer                        | Spring MVC                     | Spring Security              |
-| When executed                | After security filters         | Before security filters      |
-| Preflight (OPTIONS) handling | May fail if security blocks it | Always handled correctly     |
-| Security integration         | Manual / separate              | Automatic                    |
-| Recommended for              | Apps without Spring Security   | ✅ Apps with Spring Security  |
-| Modern best practice         | Legacy/simple                  | ✅ Preferred for new projects |
-
-What actually happens when both exist?
-| Scenario                                 | What happens                                                         | Recommendation                                                    |
-| ---------------------------------------- | -------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| 🚫 **No Spring Security**                | Only `WebMvcConfigurer` runs → works fine                            | ✅ Use only 'WebMvcConfigurer'                                     |
-| 🔐 **Spring Security present (default)** | 'CorsConfigurationSource' in SecurityFilterChain takes precedence    | ✅ Use only 'CorsConfigurationSource'                              |
-| ⚔️ **Both defined**                      | Both beans exist, but the Security one wins for all protected routes | ⚠️ Confusing, avoid using both — you’ll get inconsistent behavior |
-
-*/

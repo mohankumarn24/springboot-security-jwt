@@ -16,9 +16,9 @@ public class RefreshTokenService {
     // TTL for refresh tokens in seconds (7 days)
     private static final long REFRESH_TOKEN_TTL = 7 * 24 * 60 * 60;
 
-    private static final String TOKEN_KEY_PREFIX = "value_token:";				// use "token:"
-    private static final String USER_KEY_PREFIX = "set_username:";				// use "username:"
-    private static final String METADATA_KEY_PREFIX = "map_metadata:";			// use "metadata:"
+    private static final String TOKEN_KEY_PREFIX = "token:";			// token:<token> -> username
+    private static final String USER_KEY_PREFIX = "username:";			// username:<username>	-> { tokens }
+    private static final String METADATA_KEY_PREFIX = "metadata:";		// metadata:username:token	-> {"issuedAt": "2007-01-01", "device": "windows11", "ip":"127.0.0.1"}
 
     // Save a refresh token for a user with metadata (device, ip, issuedAt)
     public void saveRefreshToken(String token, String username, String deviceInfo, String ipAddress) {
@@ -58,14 +58,14 @@ public class RefreshTokenService {
         String username = redisTemplate.opsForValue().get(tokenKey);
         if (username == null) return;
 
-        // Remove token → username
+        // 1. Remove token → username
         redisTemplate.delete(tokenKey);
 
-        // Remove from user’s set
+        // 2. Remove from user’s set
         String userKey = USER_KEY_PREFIX + username;
         redisTemplate.opsForSet().remove(userKey, tokenKey);
 
-        // Remove metadata
+        // 3. Remove metadata
         String metadataKey = METADATA_KEY_PREFIX + username + ":" + token;
         redisTemplate.delete(metadataKey);
     }
@@ -91,7 +91,13 @@ public class RefreshTokenService {
     public Map<Object, Object> getTokenMetadata(String username, String token) {
         if (username == null || token == null) return Collections.emptyMap();
         String metadataKey = METADATA_KEY_PREFIX + username + ":" + token;
-        return redisTemplate.opsForHash().entries(metadataKey);
+        
+        // Object ip = redisTemplate.opsForHash().get(metadataKey, "ip");					// Get only the IP address
+        // List<Object> values = redisTemplate.opsForHash().values("token:john:abcd1234");	// only values   	-> ["2025-11-11T08:30Z", "MacBook", "127.0.0.1"]
+        // Set<Object> fields = redisTemplate.opsForHash().keys("token:john:abcd1234");		// only keys      	-> ["issuedAt", "device", "ip"]
+
+        // Get full metadata (keys + values)
+        return redisTemplate.opsForHash().entries(metadataKey);								// keys + values	->  { "issuedAt"="2025-11-11T08:30Z", "device"="MacBook", "ip"="127.0.0.1" }
     }
 
     // Get username for a given refresh token

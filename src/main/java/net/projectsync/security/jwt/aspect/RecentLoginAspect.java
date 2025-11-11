@@ -15,7 +15,10 @@ import net.projectsync.security.jwt.exception.ForbiddenException;
 import net.projectsync.security.jwt.exception.UnauthorizedException;
 
 /**
- * Added for '/change-password' endpoint
+ * - Added for '/change-password' endpoint
+ * - @RecentLoginRequired is a declarative security layer that helps enforce "recent login" policy for sensitive endpoints — clean, reusable, and separated from business logic
+ * - Some actions (like viewing data) can be allowed with a long-lived JWT,
+ * 	 but certain high-security actions (like changing passwords, deleting accounts, modifying MFA settings, etc.) should only be allowed shortly after a successful login.
  */
 @Aspect
 @Component
@@ -43,6 +46,7 @@ public class RecentLoginAspect {
         Instant allowedTime = Instant.now().minusSeconds(recentLogin.maxAgeSeconds());
 
         if (issuedAt.isBefore(allowedTime)) {
+        	// in case of any exception, the request never reaches '/change-password' endpoint
             throw new ForbiddenException("Token already expired/Invalid token");
         }
     }
