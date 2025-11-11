@@ -318,7 +318,7 @@ public class AuthService {
     		throw new UserNotActiveException("User not active. Please login again");
     	}
     	
-        // 1ï¸b.. Double-Submit CSRF Protection
+        // 1b. Double-Submit CSRF Protection
         if (csrfToken == null || csrfHeaderValue == null || !csrfToken.equals(csrfHeaderValue)) {
             throw new ForbiddenException("CSRF token mismatch");
         }
@@ -373,7 +373,7 @@ public class AuthService {
                 .build();
         httpServletResponse.addHeader(HttpHeaders.SET_COOKIE, clearCsrfCookie.toString());
         
-        // 89. Return success response
+        // 9. Return success response
         ApiResponse<Void> apiResponse = new ApiResponse<>("Password changed successfully. Please sign in again.", Instant.now(), null);
         return ResponseEntity.ok()
                 .header(HttpHeaders.LOCATION, "/api/auth/signin") // redirect hint for frontend
