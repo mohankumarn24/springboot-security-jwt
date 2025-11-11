@@ -2,7 +2,10 @@ package net.projectsync.security.jwt.filter;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -31,6 +34,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private final UserRepository userRepository;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     
+    private static final List<String> PUBLIC_PATHS = Arrays.asList(
+    	    "/api/auth/",
+    	    "/actuator/",
+    	    "/management/"
+    	);
+    
     // Trusted frontend origin (for cross-site requests)
     // useful when .sameSite("None") to prevent CSRF attacks
     // private static final String TRUSTED_ORIGIN = "https://client.example.org";
@@ -45,6 +54,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     	// http://localhost:8080/projectsync/api/auth/signin?debug=true -> getServletPath -> /api/auth/signin
     	// http://localhost:8080/projectsync/api/auth/signin?debug=true -> getRequestURI  -> /projectsync/api/auth/signin
     	String path = request.getServletPath();
+    	// if (PUBLIC_PATHS.stream().anyMatch(path::startsWith)) {
         if (path.startsWith("/api/auth/")) {
             chain.doFilter(request, response);	// passes the request down to the next filter in the Spring Security filter chain
             return;
@@ -204,3 +214,35 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         response.getWriter().write(body);
     }
 }
+
+/*
+
+Detailed explanation of filter hit behavior
+ - JwtAuthFilter is registered as a filter before UsernamePasswordAuthenticationFilter, so:
+ - It will run for every incoming request, except those you return early for.
+ - You skip /api/auth/**, so no JWT validation for signup/signin/refresh/logout/change-password.
+	-- For all others, the filter:
+	-- Checks Origin header (CSRF-like protection)
+	-- Extracts JWT Bearer token
+	-- Parses claims (role, username, etc.)
+	-- Sets SecurityContextHolder
+	-- If anything fails → delegates to jwtAuthenticationEntryPoint (401 JSON)
+	-- So, endpoints that hit your JwtAuthFilter: /api/admin/**, /api/user/**, /actuator/**, /management/**, any other protected endpoint except /api/auth/**
+
+| Endpoint pattern                            | In Security Config  | Filter Skips? | Hits `JwtAuthFilter`?              | Notes                                                                                                                                |
+| ------------------------------------------- | ------------------- | ------------- | ---------------------------------  | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `/api/auth/**`                              | `.permitAll()`      | ✅ Skipped     | ❌ **NO**                          | You skip manually. e.g. `/api/auth/signup`, `/api/auth/signin`, `/api/auth/refresh`, `/api/auth/logout`, `/api/auth/change-password` |
+| `/api/admin/**`                             | `.hasRole("ADMIN")` | ❌ Not skipped | ✅ **YES**                         | Must pass `Authorization: Bearer <access_token>` header                                                                              |
+| `/api/user/**`                              | `.hasRole("USER")`  | ❌ Not skipped | ✅ **YES**                         | Must pass `Authorization: Bearer <access_token>` header                                                                              |
+| `/actuator/**`                              | `.permitAll()`      | ❌ Not skipped | ✅ **YES**, but token not required | Filter executes, but simply passes request if no Bearer token                                                                        |
+| `/management/**`                            | `.permitAll()`      | ❌ Not skipped | ✅ **YES**, same as above          |                                                                                                                                      |
+| Any other `/api/**` (not under `/api/auth`) | `.authenticated()`  | ❌ Not skipped | ✅ **YES**                         | e.g. `/api/profile`, `/api/project/list`                                                                                             |
+| Static resources or `/error`                | Handled separately  | ❌             | Maybe                              | Typically bypassed by Spring Boot default config                                                                                     |
+
+
+Request to /actuator/health
+Request → CORS Filter → CSRF Filter → JwtAuthFilter → UsernamePasswordAuthenticationFilter → ...
+   ↓
+   JwtAuthFilter sees no Bearer token → passes request → permitAll() → Controller executes
+
+*/
