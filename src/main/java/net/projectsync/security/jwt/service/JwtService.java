@@ -1,5 +1,6 @@
 package net.projectsync.security.jwt.service;
 
+import java.time.Instant;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -120,7 +121,11 @@ public class JwtService {
 
     private boolean isTokenExpired(String token) {
     	// return extractAllClaims(token).getExpiration().before(new Date());
-        return extractClaim(token, Claims::getExpiration).before(new Date());	// claims -> claims.getExpiration()
+        // return extractClaim(token, Claims::getExpiration).before(new Date());	// claims -> claims.getExpiration()
+    	// return extractClaim(token, Claims::getExpiration).toInstant().isBefore(Instant.now());
+        Instant expiry = extractClaim(token, Claims::getExpiration).toInstant();
+        Instant now = Instant.now();
+        return expiry.isBefore(now);
     }
 
 	public String extractUsernameFromAuthHeader(HttpServletRequest httpServletRequest) {

@@ -85,7 +85,7 @@ public final class CookieUtils {
 	// added to avoid 'User already logged out'
 	public static AuthCookies getAuthCookiesLogout(HttpServletRequest request, CookieProperties cookieProperties) {
         Cookie[] cookies = Optional.ofNullable(request.getCookies())
-                .orElseThrow(() -> new BadRequestException("No cookies present in the request"));
+                .orElseThrow(() -> new BadRequestException("Please login again"));
 
         String refreshToken = Arrays.stream(cookies)
                 .filter(cookie -> cookie.getName().equals(cookieProperties.getRefresh().getName()))
