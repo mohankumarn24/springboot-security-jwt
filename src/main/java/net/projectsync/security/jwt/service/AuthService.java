@@ -89,6 +89,7 @@ public class AuthService {
         }
 
         // 2️. Optional: prevent multiple logins per user
+        // Other optional enhanccements: Allow up to 2 logins, Auto Remove Old Token 
         if (refreshTokenService.hasActiveRefreshTokens(user.getUsername())) {
             throw new ForbiddenException("User already logged in");
         }

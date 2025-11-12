@@ -127,7 +127,6 @@ public class RefreshTokenService {
     }
 }
 
-
 /*
 1. Redis After First Login (From Laptop):
 | **Key**                       | **Type** | **Value**                                                                                  |
@@ -153,3 +152,28 @@ public class RefreshTokenService {
 | 'username:mohan'              | Set      | '{ "value_token:token456" }'                                                             |
 | 'metadata:mohan:token456'     | Hash     | 'issuedAt = 2025-11-10T20:30:55Z'<br>'device = Android - Firefox'<br>'ip = 192.168.1.25' |
 */
+
+/*
+Optional Enhancement — Auto Remove Old Token:
+	if (tokens.size() >= maxAllowedDevices) {
+	    // remove one old token before adding new one
+	    String oldestToken = tokens.iterator().next();
+	    redisTemplate.opsForSet().remove(userKey, oldestToken);
+	}
+
+
+Modify to allow up to 2 logins:
+	public boolean hasActiveRefreshTokens(String username) {
+	    if (username == null) return false;
+	    String userKey = USERNAME_KEY_PREFIX + username;
+	
+	    Set<String> tokens = Optional
+	            .ofNullable(redisTemplate.opsForSet().members(userKey))
+	            .orElse(Collections.emptySet());
+	
+	    // Allow maximum 2 devices
+	    int maxAllowedDevices = 2;
+	
+	    return tokens.size() >= maxAllowedDevices;
+	}
+ */
