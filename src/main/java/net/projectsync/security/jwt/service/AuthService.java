@@ -108,7 +108,7 @@ public class AuthService {
         ResponseCookie refreshCookie = ResponseCookie.from(cookieProperties.getRefresh().getName(), refreshToken)	// cookie name & cookie value
                 .httpOnly(true)                             	// JS cannot access (mitigates XSS i.e, Cross Site Scripting))
                 .secure(true)                               	// Only sent over HTTPS
-                .sameSite("Strict")                         	// Restricts cross-site cookie sending. Provides CSRF protection. Adjust for cross-domain if needed
+                .sameSite("Strict")                         	// Restricts cross-site cookie sending. Provides CSRF protection. Adjust for cross-domain if needed. (protocol & TLD must match)
 																// CSRF is already disabled in SecurityConfig. But refresh token is technically a stateful cookie
 																// So, if you were worried about CSRF here, you might want CSRF just for that endpoint
 																// Using SameSite=Strict already mitigates most CSRF attacks because browsers won’t send the cookie in cross-site requests
@@ -121,23 +121,76 @@ public class AuthService {
         httpServletResponse.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());    
         														// If a cookie named "refreshToken" already exists with the same path and domain, the browser/Postman automatically replaces it.
         														// Old cookie is deleted and replaced; you do not need manual deletion.
-
+        
         // 6. Generate CSRF token (random) and set CSRF cookie (non-HttpOnly, readable by JS)
+        // NOTE: This step is not needed as 'refreshCookie' is already protected from CSRF attack (HttpOnly=true, SameSite="Strict", Secure=true). 
+        //       In this case both front-end and backend are samesite ie https://localhost:3000 and https://localhost:8080 
+        // "Double-submit cookie" step added for documentation purpose
         String csrfToken = UUID.randomUUID().toString();
         // ResponseCookie csrfCookie = CookieUtils.createCookie(cookieProperties.getCsrf(), csrfToken, false, true, "None");
         ResponseCookie csrfCookie = ResponseCookie.from(cookieProperties.getCsrf().getName(), csrfToken)
-                .httpOnly(false)
-                .secure(true)
-                .sameSite("None")
+                .httpOnly(false)								// JavaScript can read the cookie (document.cookie). ie only 'app' tab can read CSRF cookie value
+                												// Note: 'evil' tab cannot read cookies of 'app' tab. So, 'evil' tab will not know CSRF token value, can't set it in header 
+                .secure(true)									// Cookie sent only over HTTPS
+                .sameSite("None")								// Cookie will be sent in cross-origin requests
                 .path(cookieProperties.getCsrf().getPath())
                 .maxAge(cookieProperties.getCsrf().getMaxAgeSeconds())
-                .build();
+                .build();										// Final cookie: "Set-Cookie: XSRF-TOKEN=abc123; Max-Age=86400; Path=/; Secure; SameSite=None;"
         httpServletResponse.addHeader(HttpHeaders.SET_COOKIE, csrfCookie.toString());
+        
         
         // 7. Return access token in JSON. SPA should store in memory only (not localStorage or sessionStorage) to minimize XSS risk
         TokenResponse tokenResponse = new TokenResponse(accessToken, UserMapper.toDTO(user));
         ApiResponse<TokenResponse> apiResponse = new ApiResponse<>("Signed in successfully", Instant.now(), tokenResponse);
         return ResponseEntity.ok(apiResponse);
+        
+        /* Front end reads cookie and sets the value in request header
+        const csrfToken = getCookie("XSRF-TOKEN");
+        axios.post("/api/test", data, {
+           headers: { "X-CSRF-TOKEN": csrfToken }
+        });
+       		
+       	CSRF COOKIE PURPOSE (Double-submit cookie):		
+       	You only need a CSRF cookie if your frontend is on a different origin [Frontend → https://frontend.com, Backend  → https://api.backend.com]. 
+       	In that case we must set "sameSite=None". This setting will automatically send all cross-site cookies from any evil site
+		┌──────────────────────────────────────────────────────┐      ┌──────────────────────────────────────────────────────┐
+		│              YOUR WEBSITE (Origin: my-app.com)       │      │            ATTACKER WEBSITE (Origin: evil.com)       │
+		├──────────────────────────────────────────────────────┤      ├──────────────────────────────────────────────────────┤
+		│ 1. Browser stores cookie for my-app.com:             │      │ 1. Browser stores cookies only for evil.com          │
+		│      Set-Cookie: XSRF-TOKEN=abc123                   │      │    (isolated from other sites)                       │
+		│      Domain=my-app.com                               │      │                                                      │
+		│                                                      │      │                                                      │
+		│ 2. JS running on my-app.com                          │      │ 2. JS running on evil.com                            │
+		│    CAN read cookie:                                  │      │    CANNOT read cookies of my-app.com:                │
+		│      document.cookie → "XSRF-TOKEN=abc123"           │      │      document.cookie → "only evil.com cookies"       │
+		│                                                      │      │    (Blocked by Same-Origin Policy)                   │
+		│                                                      │      │                                                      │
+		│ 3. Frontend prepares API request:                    │      │ 3. Attacker tries to force victim’s browser to send  │
+		│    Reads CSRF cookie value: "abc123"                 │      │    a request to your site:                           │
+		│                                                      │      │                                                      │
+		│    Adds it to header:                                │      │    <img src="https://my-app.com/api/delete">         │
+		│      X-CSRF-TOKEN: abc123                            │      │                                                      │
+		│                                                      │      │ Browser WILL send cookies automatically:             │
+		│    Browser sends BOTH:                               │      │    Cookie: XSRF-TOKEN=abc123                         │
+		│      Cookie: XSRF-TOKEN=abc123                       │      │                                                      │
+		│      Header: X-CSRF-TOKEN=abc123                     │      │ BUT attacker cannot add the header:                  │
+		│      Origin: my-app.com                              │      │    X-CSRF-TOKEN: ???  (cannot read cookie value)     │
+		│                                                      │      │                                                      │
+		│ 4. Backend receives request                          │      │ 4. Backend receives attacker-triggered request       │
+		│                                                      │      │                                                      │
+		│    Cookie = abc123                                   │      │    Cookie = abc123                                   │
+		│    Header = abc123                                   │      │    Header = MISSING                                  │
+		│                                                      │      │                                                      │
+		│    Backend compares:                                 │      │    Backend compares:                                 │
+		│      cookie == header → TRUE                         │      │      cookie != header → FALSE                        │
+		│                                                      │      │                                                      │
+		│    ✔ ALLOW request                                  │      │    ❌ BLOCK request                                  │
+		│                                                      │      │                                                      │
+		│ 5. Result: Legit user action succeeds!               │      │ 5. Result: CSRF attack FAILS!                        │
+		└──────────────────────────────────────────────────────┘      └──────────────────────────────────────────────────────┘
+
+        
+        */        
 	}
 	
 	public ResponseEntity<ApiResponse<TokenResponse>> refresh(

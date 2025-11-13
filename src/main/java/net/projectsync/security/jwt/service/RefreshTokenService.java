@@ -66,7 +66,6 @@ public class RefreshTokenService {
         // redisTemplate.delete(usernameKey);														// remove all tokens in a set
         redisTemplate.opsForSet().remove(usernameKey, tokenKey);									// username:<username>	-> { tokens }
         																							// remove one token in a set
-
         // 3. Remove metadata
         String metadataKey = METADATA_KEY_PREFIX + username + ":" + token;
         redisTemplate.delete(metadataKey);															// metadata:username:token	-> {"issuedAt": "2007-01-01", "device": "windows11", "ip":"127.0.0.1"}
@@ -77,7 +76,8 @@ public class RefreshTokenService {
         if (username == null) return;
 
         String usernameKey = USERNAME_KEY_PREFIX + username;
-        Set<String> tokenKeys = Optional.ofNullable(redisTemplate.opsForSet().members(usernameKey)).orElse(Collections.emptySet());
+        Set<String> tokenKeys = Optional.ofNullable(redisTemplate.opsForSet().members(usernameKey))
+        									.orElse(Collections.emptySet());
         if (tokenKeys.isEmpty()) return;
 
         for (String tokenKey : tokenKeys) {
@@ -112,10 +112,12 @@ public class RefreshTokenService {
     }
 
     // Check if user has active tokens
+    // check in user's set ie., username:<username>	-> { tokens }
     public boolean hasActiveRefreshTokens(String username) {
         if (username == null) return false;
         String userKey = USERNAME_KEY_PREFIX + username;
-        Set<String> tokens = Optional.ofNullable(redisTemplate.opsForSet().members(userKey)).orElse(Collections.emptySet());
+        Set<String> tokens = Optional.ofNullable(redisTemplate.opsForSet().members(userKey))
+        								.orElse(Collections.emptySet());
         return !tokens.isEmpty();
     }
 
