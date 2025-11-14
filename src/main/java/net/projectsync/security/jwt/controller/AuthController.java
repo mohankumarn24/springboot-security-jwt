@@ -31,7 +31,7 @@ import net.projectsync.security.jwt.util.CookieUtils.AuthCookies;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
-@Validated  // Enables method-level parameter validation
+@Validated  																							// Enables method-level parameter validation. Recommended approach is to add at controller level
 public class AuthController {
 
 	private final AuthService authService;
@@ -42,7 +42,10 @@ public class AuthController {
 	public ResponseEntity<ApiResponse<UserDTO>> signup(
 													HttpServletRequest httpServletRequest,
 													HttpServletResponse httpServletResponse,
-													@Valid @RequestBody SignupRequest signupRequest) { 	// @Valid triggers validation on the fields inside SignupRequest ie., username, password
+													@RequestBody @Valid SignupRequest signupRequest) { 	// @Valid triggers validation on the fields inside SignupRequest ie., username, password
+																										// If you don’t add @Valid on the @RequestBody SignupRequest signupRequest, then Spring will NOT trigger bean validation for the fields inside SignupRequest
+																										// No automatic validation is performed on - @NotBlank, @Size, @Pattern
+																										// This means invalid or empty values will not cause any validation error
 
 		return authService.signup(
 				httpServletRequest, 
@@ -54,7 +57,7 @@ public class AuthController {
 	public ResponseEntity<ApiResponse<TokenResponse>> signin(
 													HttpServletRequest httpServletRequest,
 													HttpServletResponse httpServletResponse, 
-													@Valid @RequestBody SignInRequest signInRequest) {	// @Valid triggers validation on the fields inside signInRequest ie., username, password
+													@RequestBody @Valid SignInRequest signInRequest) {	// @Valid triggers validation on the fields inside signInRequest ie., username, password
 
 		return authService.signin(
 				httpServletRequest, 
@@ -62,6 +65,7 @@ public class AuthController {
 				signInRequest);
 	}
 
+	// @Validated 																						// either add at class-level or method-level to trigger validation
 	@PostMapping("/refresh")
 	public ResponseEntity<ApiResponse<TokenResponse>> refresh(
 													HttpServletRequest httpServletRequest,
@@ -106,7 +110,7 @@ public class AuthController {
 	public ResponseEntity<ApiResponse<Void>> changePassword(
 													HttpServletRequest httpServletRequest,
 													HttpServletResponse httpServletResponse,
-													@Valid @RequestBody ChangePasswordRequest changePasswordRequest,
+													@RequestBody @Valid  ChangePasswordRequest changePasswordRequest,
 											        @RequestHeader(value = "X-XSRF-TOKEN", required = true) String csrfHeaderValue) {
 		
 	    // Extract CSRF cookie

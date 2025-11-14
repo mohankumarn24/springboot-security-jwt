@@ -1,7 +1,6 @@
 package net.projectsync.security.jwt.aspect;
 
 import java.time.Instant;
-import java.util.Date;
 import javax.servlet.http.HttpServletRequest;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;

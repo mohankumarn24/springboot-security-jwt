@@ -83,13 +83,14 @@ public class AuthService {
 														SignInRequest signInRequest) {
 		
 		// 1️. Fetch user and verify credentials
-        User user = userRepository.findByUsername(signInRequest.getUsername()).orElseThrow(() -> new UnauthorizedException("Invalid credentials"));
+        User user = userRepository.findByUsername(signInRequest.getUsername())
+        								.orElseThrow(() -> new UnauthorizedException("Invalid credentials"));
         if (!encoder.matches(signInRequest.getPassword(), user.getPassword())) {
             throw new UnauthorizedException("Invalid credentials");
         }
 
         // 2️. Optional: prevent multiple logins per user
-        // Other optional enhanccements: Allow up to 2 logins, Auto Remove Old Token 
+        // TODO: Other optional enhanccements: Allow up to 2 logins, Auto Remove Old Token 
         if (refreshTokenService.hasActiveRefreshTokens(user.getUsername())) {
             throw new ForbiddenException("User already logged in");
         }

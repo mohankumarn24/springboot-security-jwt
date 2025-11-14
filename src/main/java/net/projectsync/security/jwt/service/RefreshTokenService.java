@@ -143,7 +143,7 @@ public class RefreshTokenService {
 | ----------------------------- | -------- | ------------------------------------------------------------------------------------------ |
 | 'token:token123'              | String   | '"mohan"'                                                                                  |
 | 'token:token456'              | String   | '"mohan"'                                                                                  |
-| 'username:mohan'              | Set      | '{ "value_token:token123", "value_token:token456" }'                                       |
+| 'username:mohan'              | Set      | '{ "token:token123", "token:token456" }' 			                                        |
 | 'metadata:mohan:token123'     | Hash     | 'issuedAt = 2025-11-10T20:25:12Z'<br>'device = Windows 11 - Chrome'<br>'ip = 192.168.1.12' |
 | 'metadata:mohan:token456'     | Hash     | 'issuedAt = 2025-11-10T20:30:55Z'<br>'device = Android - Firefox'<br>'ip = 192.168.1.25'   |
 
@@ -151,7 +151,7 @@ public class RefreshTokenService {
 | **Key**                       | **Type** | **Value**                                                                                |
 | ----------------------------- | -------- | ---------------------------------------------------------------------------------------- |
 | 'token:token456'              | String   | '"mohan"'                                                                                |
-| 'username:mohan'              | Set      | '{ "value_token:token456" }'                                                             |
+| 'username:mohan'              | Set      | '{ "token:token456" }'   	                                                              |
 | 'metadata:mohan:token456'     | Hash     | 'issuedAt = 2025-11-10T20:30:55Z'<br>'device = Android - Firefox'<br>'ip = 192.168.1.25' |
 */
 

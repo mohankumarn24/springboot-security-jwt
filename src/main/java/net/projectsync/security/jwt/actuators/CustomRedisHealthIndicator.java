@@ -44,5 +44,4 @@ public class CustomRedisHealthIndicator implements HealthIndicator {
 | Purpose          | Expose app health via HTTP                                                                            | Provide custom health logic |
 | Aggregation      | Yes (combines all indicators)                                                                         | Individual checks           |
 | Security         | Controlled via Spring Security                                                                        | No direct HTTP exposure     |
-| Use in Interview | Mention that `/health` exposes combined health, HealthIndicators are how you define individual checks |                             |
 */
