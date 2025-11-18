@@ -4,9 +4,7 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
 import javax.servlet.http.HttpServletRequest;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import io.jsonwebtoken.Claims;
@@ -72,7 +70,7 @@ public class JwtService {
                     .parseClaimsJws(token)
                     .getBody();
 		} catch (ExpiredJwtException e) {
-			throw new InvalidJwtTokenException("Access token expired", e);	// InvalidJwtTokenException() extends UnauthorizedException()
+			throw new InvalidJwtTokenException("Access token expired", e);							// InvalidJwtTokenException() extends UnauthorizedException()
 		} catch (MalformedJwtException e) {
 			throw new InvalidJwtTokenException("Invalid token", e);
 		} catch (SignatureException e) {
@@ -89,7 +87,7 @@ public class JwtService {
     // 5️. Extract username (subject) from JWT
     public String extractUsername(String token) {
     	// return extractAllClaims(token).getSubject();
-        return extractClaim(token, Claims::getSubject);		// return extractClaim(token, claims -> claims.getSubject());
+        return extractClaim(token, Claims::getSubject);												// return extractClaim(token, claims -> claims.getSubject());
     }
 
     // Extract a specific claim
@@ -121,7 +119,7 @@ public class JwtService {
 
     private boolean isTokenExpired(String token) {
     	// return extractAllClaims(token).getExpiration().before(new Date());
-        // return extractClaim(token, Claims::getExpiration).before(new Date());	// claims -> claims.getExpiration()
+        // return extractClaim(token, Claims::getExpiration).before(new Date());					// claims -> claims.getExpiration()
     	// return extractClaim(token, Claims::getExpiration).toInstant().isBefore(Instant.now());
         Instant expiry = extractClaim(token, Claims::getExpiration).toInstant();
         Instant now = Instant.now();

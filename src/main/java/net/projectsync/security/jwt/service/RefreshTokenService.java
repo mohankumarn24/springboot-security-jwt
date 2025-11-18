@@ -16,9 +16,9 @@ public class RefreshTokenService {
     // TTL for refresh tokens in seconds (7 days)
     private static final long REFRESH_TOKEN_TTL = 7 * 24 * 60 * 60;
 
-    private static final String TOKEN_KEY_PREFIX = "token:";			// token:<token> -> username
-    private static final String USERNAME_KEY_PREFIX = "username:";		// username:<username>	-> { tokens }
-    private static final String METADATA_KEY_PREFIX = "metadata:";		// metadata:username:token	-> {"issuedAt": "2007-01-01", "device": "windows11", "ip":"127.0.0.1"}
+    private static final String TOKEN_KEY_PREFIX = "token:";										// token:<token> -> username
+    private static final String USERNAME_KEY_PREFIX = "username:";									// username:<username>	-> { tokens }
+    private static final String METADATA_KEY_PREFIX = "metadata:";									// metadata:username:token	-> {"issuedAt": "2007-01-01", "device": "windows11", "ip":"127.0.0.1"}
 
     // Save a refresh token for a user with metadata (device, ip, issuedAt)
     public void saveRefreshToken(String token, String username, String deviceInfo, String ipAddress) {
@@ -95,12 +95,12 @@ public class RefreshTokenService {
         if (username == null || token == null) return Collections.emptyMap();
         String metadataKey = METADATA_KEY_PREFIX + username + ":" + token;
         
-        // Object ip = redisTemplate.opsForHash().get(metadataKey, "ip");					// Get only the IP address
-        // Set<Object> fields = redisTemplate.opsForHash().keys("token:john:abcd1234");		// only keys      	-> ["issuedAt", "device", "ip"]
-        // List<Object> values = redisTemplate.opsForHash().values("token:john:abcd1234");	// only values   	-> ["2025-11-11T08:30Z", "MacBook", "127.0.0.1"]
+        // Object ip = redisTemplate.opsForHash().get(metadataKey, "ip");							// Get only the IP address
+        // Set<Object> fields = redisTemplate.opsForHash().keys("token:john:abcd1234");				// only keys      	-> ["issuedAt", "device", "ip"]
+        // List<Object> values = redisTemplate.opsForHash().values("token:john:abcd1234");			// only values   	-> ["2025-11-11T08:30Z", "MacBook", "127.0.0.1"]
 
         // Get full metadata (keys + values)
-        return redisTemplate.opsForHash().entries(metadataKey);								// keys + values	->  { "issuedAt"="2025-11-11T08:30Z", "device"="MacBook", "ip"="127.0.0.1" }
+        return redisTemplate.opsForHash().entries(metadataKey);										// keys + values	->  { "issuedAt"="2025-11-11T08:30Z", "device"="MacBook", "ip"="127.0.0.1" }
     }
 
     // Get username for a given refresh token
