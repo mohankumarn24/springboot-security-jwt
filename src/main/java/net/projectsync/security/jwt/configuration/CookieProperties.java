@@ -21,6 +21,8 @@ public class CookieProperties {
 		public void setMaxAgeSeconds(long maxAgeSeconds) { this.maxAgeSeconds = maxAgeSeconds; }
 	}
 	
+	// Spring Documentation: “For nested properties to be bound correctly, the nested POJOs should be initialized.”
+	// Spring needs these objects to already exist so it can put values inside them
 	private Cookie refresh = new Cookie();
 	private Cookie csrf = new Cookie();
 

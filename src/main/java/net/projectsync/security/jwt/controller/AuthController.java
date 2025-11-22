@@ -82,6 +82,17 @@ public class AuthController {
 				authCookies.getRefreshToken(),
 				authCookies.getCsrfToken(), 
 				csrfHeaderValue);
+		
+		/*
+		 * You can use request.getHeader("X-XSRF-TOKEN") instead of @RequestHeader, and it will work the same
+		 * 
+		 * | --------------------- | ------ | ---------------------------- | ------------------------------- |
+		 * | Option                | Works? | Pros                         | Cons                            |
+		 * | --------------------- | ------ | ---------------------------- | ------------------------------- |
+		 * |  @RequestHeader       |  Yes   | Auto-validation, clean, safe | None                            |
+		 * |  request.getHeader()  |  Yes   | Manual control               | You must validate null yourself |
+		 * | --------------------- | ------ | ---------------------------- | ------------------------------- |
+		 */
 	}
 
 	@PostMapping("/logout")
