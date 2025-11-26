@@ -134,7 +134,7 @@ public class RefreshTokenService {
 | **Key**                       | **Type** | **Value**                                                                                  |
 | ----------------------------- | -------- | ------------------------------------------------------------------------------------------ |
 | 'token:token123'              | String   | '"mohan"'                                                                                  |
-| 'username:mohan'              | Set      | '{ "value_token:token123" }'                                                               |
+| 'username:mohan'              | Set      | '{ "token:token123" }'                                                               |
 | 'metadata:mohan:token123'     | Hash     | 'issuedAt = 2025-11-10T20:25:12Z'<br>'device = Windows 11 - Chrome'<br>'ip = 192.168.1.12' |
 
 
