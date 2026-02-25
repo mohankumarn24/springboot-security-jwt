@@ -1,7 +1,12 @@
 package net.projectsync.security.jwt.dto;
 
+import javax.validation.constraints.Email;
+import javax.validation.constraints.Negative;
+import javax.validation.constraints.NegativeOrZero;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import javax.validation.constraints.Size;
 
 public class SignupRequest {
@@ -41,4 +46,12 @@ public class SignupRequest {
 
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
+    
+    /*
+     * @Positive
+     * @PositiveOrZero
+     * @Email
+     * @Negative
+     * @NegativeOrZero
+     */
 }
